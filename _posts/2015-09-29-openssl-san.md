@@ -119,14 +119,15 @@ $ openssl ca -in ustack.csr \
         <(printf "[SAN]\nsubjectAltName=DNS:www.ustack.in,DNS:www.test.ustack.com")) \ 
 	-out ustack.crt
 ```
-	
+
 查看证书内容：
 
 ```
 $openssl x509 -text -noout -in ustack.crt
 ```
 
-</br>
+<br>
+
 参考：
 
 - [Creating and signing an SSL cert with alternative names](http://blog.zencoffee.org/2013/04/creating-and-signing-an-ssl-cert-with-alternative-names/)
