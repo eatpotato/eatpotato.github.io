@@ -56,7 +56,9 @@ DNS 数据库以层级的树状结构组织，最顶级的服务器被称为「�
 
 
 ## DNS 客户端
+
 ### dig
+
 dig 是 Linux 下常用的 DNS 查询工具，在 CentOS 系统中，由 `bind-utils` 软件包提供，它的使用方法为：
 
 `dig -t RRT NAME [@NAME_SERVER]`
@@ -163,7 +165,7 @@ BIND 是由 Berkely 大学研发的一款开源 DNS 服务器程序，同时也�
 
 `/etc/rndc.conf`：远程控制的配置信息
 
-`/var/named/`：雨区数据文件
+`/var/named/`: 域数据文件
 
 二进制程序：`/usr/sbin/named`
 
