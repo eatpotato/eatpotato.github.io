@@ -5,7 +5,7 @@ subtitle:   "Nginx intro"
 date:       2015-06-06 23:00:00
 author:     Lance
 header-img: img/post-bg-2015.jpg
-permalink:  /haproxy-tutorial/
+permalink:  /nginx-intro/
 tags:
     - Nginx
 ---
