@@ -21,8 +21,6 @@ tags:
 ### Stage 2
 stage2.img 是 SquashFS 类型文件系统，其中包含了安装程序 anaconda 和它的配置文件。anaconda 提供了安装过程的配置界面，它可以提供文本、图形等安装管理方式，并支持 kickstart 等脚本提供自动安装的功能。在安装系统之后会自动生成 /root/anaconda-ks.cfg 的配置信息，其中记录了安装系统所选取选项自动生成的，方便以后自动安装。
 
-<!--more--->
-
 下面是 CentOS 6 安装时 stage 1 的菜单界面：
 
 ![](/img/in-post/linux-kickstart/stage1.png)

@@ -11,7 +11,6 @@ tags:
 ---
 
 Nginx(engine X) 是一个高性能的 HTTP 服务器和反向代理服务器，这款软件开发的目的是为了解决 [C10k 问题](https://www.wikiwand.com/en/C10k_problem)。
-<!--more-->
 
 Nginx 的架构利用了许多现代操作系统的特性，以实现一个高性能的 HTTP 服务器。例如在 Linux 系统上，Nginx 使用了 epoll，sendfile，File AIO，DIRECTIO 等机制，使得 Nginx 不仅性能高效，而且资源占用率非常低，官方宣称 nginx 维持 10000 个非活动的 HTTP keep-alive 连接仅需要 2.5M 内存。
 
@@ -64,7 +63,7 @@ Nginx会按需同时运行多个进程：一个主进程（master）和几个工
 
 启动 nginx：
 
-	# nginx -c /etc/nginx/nginx.conf 
+	# nginx -c /etc/nginx/nginx.conf
 
 关闭 nginx
 
@@ -224,7 +223,7 @@ URL 重写，可以使用多种标记
 	server {
   	listen      80;
   	server_name example.me;
- 
+
 	return 301 https://$server_name$request_uri;
 	}
 
