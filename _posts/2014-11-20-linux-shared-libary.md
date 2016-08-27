@@ -3,7 +3,7 @@ layout:     post
 title:      "Linux 共享库指南"
 subtitle:   "Shared Library in Linux"
 date:       2014-11-20 21:00:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /linux-shared-libary/
 tags:

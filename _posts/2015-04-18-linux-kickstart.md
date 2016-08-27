@@ -3,7 +3,7 @@ layout:     post
 title:      Linux Kickstart 自动安装
 subtitle:   "Unattended installation with kickstart"
 date:       2015-04-18 21:00:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /linux-kickstart/
 tags:

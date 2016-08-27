@@ -3,7 +3,7 @@ layout:     post
 title:      "MySQL 运行环境优化(Linux)"
 subtitle:   "小白的数据库调优指北"
 date:       2014-11-14 22:00:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /mysql-optimize-in-linux/
 tags:

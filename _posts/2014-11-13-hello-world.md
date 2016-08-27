@@ -3,7 +3,7 @@ layout:     post
 title:      Hello, World!
 subtitle:   " \"Hello World, Hello Blog\""
 date:       2014-11-13 23:00:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /hello-world/
 tags:

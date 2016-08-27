@@ -3,7 +3,7 @@ layout:     post
 title:      Linux 进程的管理与监控
 subtitle:   "Process Management"
 date:       2015-04-14 20:35:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /inux-process-management/
 tags:

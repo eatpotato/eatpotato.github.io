@@ -3,7 +3,7 @@ layout:     post
 title:      无后为大
 subtitle:
 date:       2016-08-21 23:10:00
-author:     Lance
+author:     Liao
 header-img: img/post-life-without-children.jpg
 permalink:  /life-without-children/
 tags:

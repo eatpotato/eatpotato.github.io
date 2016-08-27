@@ -3,7 +3,7 @@ layout:     post
 title:      "Linux 性能优化之 IO 子系统"
 subtitle:   "Dive into IO subsystem"
 date:       2014-11-17 23:51:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /linux-system-io/
 tags:

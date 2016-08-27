@@ -3,7 +3,7 @@ layout:     post
 title:      计算机原理 —— 计算机是如何启动的
 subtitle:   "How computer booted"
 date:       2015-04-30 23:00:00
-author:     Lance
+author:     Liao
 header-img: img/post-bg-2015.jpg
 permalink:  /how-computers-boot-up/
 tags:
