@@ -95,10 +95,10 @@ friends: [
         title: "周维宇日志",
         href: "https://zhouweiyu.wordpress.com/"
     },{
-        title: "廖鹏辉博客"
+        title: "廖鹏辉博客",
         href: "http://liaoph.com/"
     },{
-        tile:  "付广平博客"
+        tile:  "付广平博客",
         href: "http://int32bit.me/"
     } 
 ]
