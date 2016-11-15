@@ -5,6 +5,9 @@ category: 云计算
 comments: true
 ---
 
+
+#puppet-openstack-intergration
+ 
 ##项目简介
 puppet-openstack-integration此模块确保社区可以持续地测试和验证使用Puppet modules部署的Openstack集群。  
 支持环境：支持 Ubuntu 14.04或者CentOS 7.x
