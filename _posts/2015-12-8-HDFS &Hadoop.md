@@ -1,8 +1,10 @@
 ---
 layout: post
 title: HDFS原理
-category: 技术
-comments: true
+date:       2015-12-8
+author:     xue
+tags:
+    - hadoop
 ---
 
 ## Hadoop与HDFS

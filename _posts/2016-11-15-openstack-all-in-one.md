@@ -1,7 +1,6 @@
 ---
 layout:     post
 title:      openstack-all-in-one30分钟快速搭建
-subtitle:   
 date:       2016-11-15 
 author:     xue
 tags:

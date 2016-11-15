@@ -1,8 +1,10 @@
 ---
 layout: post
 title: 虚拟化
-category: 云计算
-comments: true
+date:       2015-12-24
+author:     xue
+tags:
+    - 虚拟化
 ---
 ## 虚拟化概述
 

@@ -1,9 +1,11 @@
 ---
 layout: post
 title: HBase原理及基本操作
-category: 技术
-comments: true
 header-img: img/hbase-head.jpg
+date:       2016-12-8
+author:     xue
+tags:
+    - hadoop
 ---
 
 ## 什么是HBase?

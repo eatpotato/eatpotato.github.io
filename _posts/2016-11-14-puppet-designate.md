@@ -1,8 +1,10 @@
 ---
 layout: post
 title: puppet-designate
-category: 云计算
-comments: true
+date:       2016-11-14
+author:     xue
+tags:
+    - openstack
 ---
 
 ## puppet-designate

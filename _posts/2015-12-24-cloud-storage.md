@@ -1,8 +1,10 @@
 ---
 layout: post
 title: 对三种分布式存储的学习以及认识
-category: 云计算
-comments: true
+date:       2015-12-24
+author:     xue
+tags:
+    - openstack
 ---
 ## 分布式存储
 

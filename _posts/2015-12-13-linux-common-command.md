@@ -1,8 +1,10 @@
 ---
 layout: post
 title: Linux常用命令
-category: linux
-comments: true
+date:       2015-12-13
+author:     xue
+tags:
+    - linux
 ---
 
 # Linux常用命令总结

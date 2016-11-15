@@ -1,8 +1,10 @@
 ---
 layout: post
 title: Git常用命令清单
-category: git
-comments: true
+date:       2015-12-12
+author:     xue
+tags:
+    - git
 ---
 
 # 常用Git命令清单

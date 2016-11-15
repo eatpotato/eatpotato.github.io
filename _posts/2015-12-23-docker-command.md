@@ -1,8 +1,10 @@
 ---
 layout: post
 title: Docker初探
-category: docker
-comments: true
+date:       2015-12-23
+author:     xue
+tags:
+    - docker
 ---
 
 # Docker简单使用
