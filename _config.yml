@@ -86,9 +86,6 @@ featured-condition-size: 1              # A tag will be featured if the size of 
 # Friends
 friends: [
     {
-        title: "Puppet OpenStack",
-        href: "http://pom.nops.cloud/"
-    },{
         title: "牛皮糖",
         href: "http://www.cnblogs.com/yuxc/"
     },{
