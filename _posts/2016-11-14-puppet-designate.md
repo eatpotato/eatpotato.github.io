@@ -38,7 +38,7 @@ DNS 的全称是 Domain Name System，DNS 负责主机名字之间和互联网�
 DNS是一个层级的分布式的数据库，以 C/S 架构工作，它将互联网名称（域名）和 IP 地址的对应关系记录下来，可以为客户端提供名称解析的功能。它允许对整个数据库的各个部分进行本地控制，借助备份和缓存机制， DNS 将具有足够的强壮性。
 
 DNS 数据库以层级的树状结构组织，最顶级的服务器被称为「根」（root），以 . 表示，它是所有子树的根。root 将自己划分为多个子域（subdomain），这些子域包括 com，net，org，gov，net 等等，这些子域被称为顶级域（Top Level Domain, TDL）。再进一步，各顶级域再将自己划分成多个子域，子域还可以在划分子域，最后树的叶子节点就是某个域的主机名。整个结构如下图所示：
-![](../img/designate/dns-hierarchy.png)
+![](/img/designate/dns-hierarchy.png)
 每个域的名称服务器仅负责本域内的主机的名称解析，如果需要解析子域的主机，就需要再向其子域的名称服务器查询。这样一来，无论主机在哪个域内，都可以从根开始一级一级的找到负责解析此主机名称的域，然后完成域名解析。
 
 ###BIND DNS 服务器
@@ -177,7 +177,7 @@ OpenStack Designate提供了DNSaaS（DNS即服务）的功能，其目标就是�
 
 Designate的架构图如下：
 
-![](../img/designate/designate-architecture.png)
+![](/img/designate/designate-architecture.png)
 
 | 包含的服务 | 简介 |
 | --- | --- |
@@ -190,7 +190,7 @@ Designate的架构图如下：
 
 Designate kilo版本所引入的pool manager机制将DNS服务器群划分成多个服务器池（pool），如下图所示，每个服务器池可以配置包含1台或多台DNS服务器。而且，池中的DNS服务器选型还可以不同，也就是说在一个服务器池中，可以有1台BIND服务器，还可以有1台PowerDNS服务器，这是完全支持的。
 
-![](../img/designate/designate-pool.png)
+![](/img/designate/designate-pool.png)
 
 服务器池的引入目的：
 

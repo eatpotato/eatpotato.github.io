@@ -3,6 +3,7 @@ layout: post
 title: HBase原理及基本操作
 category: 技术
 comments: true
+header-img: img/hbase-head.jpg
 ---
 
 ## 什么是HBase?
