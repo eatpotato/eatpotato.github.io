@@ -6,7 +6,6 @@ author:     xue
 tags:
     - openstack
 ---
-
 ## puppet-designate
 1. [DNS基础知识](#DNS)
 
