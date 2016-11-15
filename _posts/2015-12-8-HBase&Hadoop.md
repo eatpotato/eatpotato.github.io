@@ -1,8 +1,7 @@
 ---
 layout: post
 title: HBase原理及基本操作
-header-img: img/hbase-head.jpg
-date:       2016-12-8
+date:       2015-12-8
 author:     xue
 tags:
     - hadoop
