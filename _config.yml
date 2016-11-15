@@ -5,15 +5,15 @@ header-img: img/home-bg.jpg
 email: xuefeiyang93@gmail.com
 description: ""
 keyword: ""
-url: ""              # your host, for absolute URL
-baseurl: ""         # for example, '/blog' if your blog hosted on 'host/blog'
-author: ""
+url: "https://eatpotato.github.io/"              # your host, for absolute URL
+baseurl: ""
+author: "xue"
 
 
 
 # SNS settings
 RSS: true
-weibo_username:     
+weibo_username:    爱吃土豆的程序猿 
 #zhihu_username:     
 github_username:    eatpotato
 #twitter_username:  
@@ -63,7 +63,7 @@ duoshuo_share: true                     # set to false if you want to use Commen
 
 # Analytics settings
 # Baidu Analytics
-ba_track_id: 
+#ba_track_id: 
 # Google Analytics
 #ga_track_id: 'UA-49627206-1'            # Format: UA-xxxxxx-xx
 #ga_domain: huangxuan.me
