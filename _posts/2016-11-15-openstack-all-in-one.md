@@ -9,13 +9,13 @@ tags:
     - openstack
 ---
 
-#puppet-openstack-intergration
+# puppet-openstack-intergration
  
-##项目简介
+## 项目简介
 puppet-openstack-integration此模块确保社区可以持续地测试和验证使用Puppet modules部署的Openstack集群。  
 支持环境：支持 Ubuntu 14.04或者CentOS 7.x
 
-##开始前准备工作
+## 开始前准备工作
 1. 解决跟linux内核版本有关的bug（在特定内核版本的虚拟机上执行会出现此错误）:  
    说明：目前在有云上创建的CentOS7.2的虚拟机都会出现此问题。  
    方法：在http://rpmfind.net/linux/rpm2html/search.php?query=kernel-devel中找到对应内核版本的kernel-devel rpm包并安装。
@@ -50,7 +50,7 @@ git clone -b stable/mitaka https://github.com/openstack/puppet-openstack-integra
 export SCENARIO=scenario001 #将第46行内容改为此行内容
 ```
 
-##Installation
+## Installation
 
 1. 进入puppet-openstack-integration目录下，执行：./all-in-one.sh
 2. 等待n杯咖啡的时间,openstack(M版)+ceph就安装好了
@@ -65,7 +65,7 @@ To use OpenStack through the CLI, run:
 ```
 4. 本次安装版本不带horizon组件，所以需要通过CLI访问。
 
-##执行过程分析
+## 执行过程分析
 执行all-in-one.sh脚本：  
 1. 从git上clone puppet-openstack-integration项目  
 2. 根据funtion函数中的方法判断操作系统的类型，安装libxml2-devel libxslt-devel,ruby,gem等软件，卸载facter，puppet等软件  
@@ -90,7 +90,7 @@ To use OpenStack through the CLI, run:
 3. 第二次执行run_puppet ，根据执行返回值确定执行状态。  
 4. 安装配置tempest并相应运行smoke测试
 
-##可能出现的问题
+## 可能出现的问题
 执行过程中，可能在git clone -b 12.0.0 git://git.openstack.org/openstack/tempest /tmp/openstack/tempest这一步等待较长时间然后报错  
 解决方法：  
    在命令行执行：git clone -b 12.0.0 https://git.openstack.org/openstack/tempest /tmp/openstack/tempest  ,并注释掉run_test.sh的这一行代码（第62行）
