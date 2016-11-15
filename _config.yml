@@ -1,23 +1,23 @@
 # Site settings
-title: 坚实的幻想
-SEOTitle: Fantasy
+title: 一只爱吃土豆的程序猿
+SEOTitle: eatpotato
 header-img: img/home-bg.jpg
-email: liaoishere@gmail.com
-description: "On A Clear Disk You Can Seek Forever"
+email: xuefeiyang93@gmail.com
+description: ""
 keyword: ""
-url: "http://liaoph.com"              # your host, for absolute URL
+url: ""              # your host, for absolute URL
 baseurl: ""         # for example, '/blog' if your blog hosted on 'host/blog'
-author: "Liao"
+author: ""
 
 
 
 # SNS settings
 RSS: true
-weibo_username:     aoLiii
-#zhihu_username:     liaopenghui
-github_username:    liaoishere
-#twitter_username:  huxpro
-#facebook_username:  huxpro
+weibo_username:     
+#zhihu_username:     
+github_username:    eatpotato
+#twitter_username:  
+#facebook_username:  
 
 
 
@@ -54,7 +54,7 @@ kramdown:
 #disqus_username: _your_disqus_short_name_
 
 # Duoshuo settings
-duoshuo_username: liaoishere
+duoshuo_username: eatpotato
 # Share component is depend on Comment so we can NOT use share only.
 duoshuo_share: true                     # set to false if you want to use Comment without Sharing
 
@@ -63,7 +63,7 @@ duoshuo_share: true                     # set to false if you want to use Commen
 
 # Analytics settings
 # Baidu Analytics
-ba_track_id: ca24cc0fb86c19c1a88f5f7a020629d3
+ba_track_id: 
 # Google Analytics
 #ga_track_id: 'UA-49627206-1'            # Format: UA-xxxxxx-xx
 #ga_domain: huangxuan.me
@@ -72,8 +72,8 @@ ba_track_id: ca24cc0fb86c19c1a88f5f7a020629d3
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "Proudly uncool and out of fashion"
-sidebar-avatar: /img/avatar-liao.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-about-description: ""
+sidebar-avatar: /img/avatar-xue.jpeg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
@@ -94,5 +94,11 @@ friends: [
     },{
         title: "周维宇日志",
         href: "https://zhouweiyu.wordpress.com/"
-    }
+    },{
+        title: "廖鹏辉博客"
+        href: "http://liaoph.com/"
+    },{
+        tile:  "付广平博客"
+        href: "http://int32bit.me/"
+    } 
 ]
