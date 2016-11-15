@@ -5,7 +5,7 @@ category: linux
 comments: true
 ---
 
-#Linux常用命令总结
+# Linux常用命令总结
 
 
 &emsp;&emsp;虽然使用Linux较长时间了，但是还没有对Linux系统的学习过，导致遇到一些问题常常要去网上查Linux命令，因此花了近一周的时间看了《鸟哥的Linux私房菜》前十二章，这里记录一些常用了Linux命令，一方面是为了加强记忆，一方面也是为了方便以后的查询。
@@ -136,7 +136,7 @@ comments: true
 >$ grep  
 >\# 示例：ps -aux | grep java
 
-##Vi编辑器常用命令
+## Vi编辑器常用命令
 
 >\# 向下移动一页  
 >$ ctrl+f
@@ -209,7 +209,7 @@ comments: true
 
 
 
-##通配符与特殊符号
+## 通配符与特殊符号
 
 - *：代表0个到无穷多个任意字符  
 - ?：代表一定有一个任意字符  

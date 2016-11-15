@@ -5,7 +5,7 @@ category: git
 comments: true
 ---
 
-#常用Git命令清单
+# 常用Git命令清单
 
 > 来源：阮一峰的网络日志  
 > 网址：[原文链接](http://www.ruanyifeng.com/blog/2015/12/git-cheat-sheet.html)
@@ -22,7 +22,7 @@ comments: true
 
 ![relation](/img/2015/12/12/relation.png "relation")<br>
 
-##一、新建代码库
+## 一、新建代码库
 
 >\# 在当前目录新建一个Git代码库  
 >$ git init
@@ -33,7 +33,7 @@ comments: true
 >\# 下载一个项目和它的整个代码历史
 >$ git clone [url]
 
-##二、配置
+## 二、配置
 
 &emsp;&emsp;Git的设置文件为.gitconfig，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）。
 
@@ -47,7 +47,7 @@ comments: true
 >$ git config [--global] user.name "[name]"  
 >$ git config [--global] user.email "[email address]"
 
-##三、增加/删除文件
+## 三、增加/删除文件
 
 >\# 添加指定文件到暂存区  
 >$ git add [file1] [file2]
@@ -64,7 +64,7 @@ comments: true
 >\# 改名文件，并且将这个改名放入暂存区
 >$ git mv [file-original] [file-renamed]
 
-##四、代码提交
+## 四、代码提交
 
 >\# 提交暂存区到仓库区  
 >$ git commit -m "[message]"
@@ -85,7 +85,7 @@ comments: true
 >\# 重做上一次commit ，并包括指定文件的新变化  
 >$ git commit --amend [file1] [file2] ...
 
-##五、分支
+## 五、分支
 >\# 列出所有本地分支  
 >$ git branch
 
@@ -126,7 +126,7 @@ comments: true
 >$ git push origin --delete [branch-name]
 >$ git branch -dr [remote/branch]
 
-##六、标签
+## 六、标签
 
 >\# 列出所有tag  
 >$ git tag
@@ -149,7 +149,7 @@ comments: true
 >\# 新建一个分支，指向某个tag  
 >$ git checkout -b [branch] [tag]
 
-##七、查看信息
+## 七、查看信息
 
 >\# 显示有变更的文件  
 >$ git status
@@ -194,7 +194,7 @@ comments: true
 >\# 显示当前分支的最近几次提交  
 >$ git reflog
 
-##八、远程同步
+## 八、远程同步
 
 >\#　下载远程仓库的所有变动　　  
 >$ git fetch [remote]
@@ -220,7 +220,7 @@ comments: true
 >\# 推送所有分支到远程仓库  
 >$ git push [remote] --all
 
-##九、撤销
+## 九、撤销
 
 >\# 恢复暂存区的指定文件到工作区  
 >$ git checkout [file]
@@ -250,7 +250,7 @@ comments: true
 >\# 后者的所有变化都将被前者抵消，并且应用到当前分支  
 >$ git revert [commit]
 
-##十、其他
+## 十、其他
 
 >\# 生成一个可供发布的压缩包  
 >$ git archive
