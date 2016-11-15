@@ -1,10 +1,13 @@
 ---
-layout: post
-title: openstack-all-in-one30分钟快速安装
-category: 云计算
-comments: true
+layout:     post
+title:      openstack-all-in-one30分钟快速搭建
+subtitle:   
+date:       2016-11-15 
+author:     xue
+header-img: img/post-bg-linux-interrupt.jpg
+tags:
+    - openstack
 ---
-
 
 #puppet-openstack-intergration
  
