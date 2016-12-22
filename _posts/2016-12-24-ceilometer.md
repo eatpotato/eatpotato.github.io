@@ -262,6 +262,99 @@ ceilometer alarm-state-get -a alarm-id
 ```
 
 
+## ceilometer快速安装
+
+puppet-openstack-integration项目可以快速部署openstack all-in-one环境，github链接:[puppet-openstack-integration](https://github.com/openstack/puppet-openstack-integration/tree/stable/mitaka)
+
+部署请参考文章: [openstack-all-in-one30分钟快速搭建](http://xuefy.cn/2016/11/15/openstack-all-in-one/)
+
+### ceilometer.conf配置
+下面是用puppet-openstack-integration 跑出来的 all-in-one环境ceilometer配置如下：
+
+```
+[DEFAULT]
+polling_namespaces=central,compute,ipmi
+meter_dispatchers=gnocchi
+event_dispatchers=gnocchi
+http_timeout=600
+debug=True
+verbose=True
+log_dir=/var/log/ceilometer
+rpc_backend=rabbit
+notification_topics=notifications
+[api]
+port=8777
+host=0.0.0.0
+[central]
+[collector]
+udp_address=0.0.0.0
+udp_port=4952
+workers=1
+batch_size=100
+[compute]
+[coordination]
+[cors]
+[cors.subdomain]
+[database]
+metering_time_to_live=86400
+event_time_to_live=86400
+connection=mysql+pymysql://ceilometer:ceilometer@127.0.0.1/ceilometer?charset=utf8
+metering_connection = mongodb://ceilometer:ceilometer@127.0.0.1:27017/ceilometer
+[dispatcher_file]
+[dispatcher_gnocchi]
+filter_project = services
+filter_service_activity = False
+resources_definition_file = gnocchi_resources.yaml
+[event]
+[exchange_control]
+[hardware]
+[ipmi]
+[keystone_authtoken]
+auth_uri=http://127.0.0.1:5000/
+admin_tenant_name=services
+admin_user=ceilometer
+admin_password=a_big_secret
+identity_uri=http://127.0.0.1:35357/
+[matchmaker_redis]
+[meter]
+[notification]
+ack_on_event_error=True
+store_events=False
+workers=2
+[oslo_concurrency]
+[oslo_messaging_amqp]
+[oslo_messaging_notifications]
+[oslo_messaging_rabbit]
+rabbit_host=127.0.0.1
+rabbit_port=5672
+rabbit_hosts=127.0.0.1:5672
+rabbit_use_ssl=False
+rabbit_userid=ceilometer
+rabbit_password=an_even_bigger_secret
+rabbit_virtual_host=/
+rabbit_ha_queues=False
+heartbeat_timeout_threshold=0
+heartbeat_rate=2
+[oslo_policy]
+[polling]
+[publisher]
+metering_secret=secrete
+[publisher_notifier]
+[rgw_admin_credentials]
+[service_credentials]
+auth_type=password
+auth_url=http://127.0.0.1:5000/
+project_name=services
+project_domain_name=Default
+username=ceilometer
+user_domain_name=Default
+password=a_big_secret
+[service_types]
+[storage]
+[vmware]
+[xenapi]
+```
+
 参考：  
 [Openstack入门篇-Ceilometer](http://moyasu.win/openstack%E5%85%A5%E9%97%A8%E7%AF%87-ceilometer/)  
 [ceilometer M 版本collector源码分析](http://www.wtoutiao.com/p/369hDEp.html)
