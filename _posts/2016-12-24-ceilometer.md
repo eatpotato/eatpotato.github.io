@@ -29,7 +29,7 @@ ceilometer 主要有下面几个概念:
 ### Statistics
 
 一个时间段（Period）内的 samples 聚合值，包括计数（Count）、最大（Max）、最小（Min）、平均 （Avg）、求和（Sum）等。例如：  
-![](/img/ceilometer/ceilometer-statistics.png.png)  
+![](/img/ceilometer/ceilometer-statistics.png)  
 这里的Period表示当前该查询的区间，使用 -p 参数指定  
 需要注意的是，你可以使用 ”-q“ 指定统计的目标范围。当不指定的时候，表示对当前租户（tenant）内的所有虚机的 sample 做统计。比如指定 resource_id 来只统计某一个虚机：   
 ceilometer statistics -m cpu_util -p 60 -q resource_id=d7ce68d4-3d58-404c-85a6-f9c19fe9d96c。
@@ -165,7 +165,7 @@ use_namespaces = True
 ```
 重启网络服务：  
 systemctl start neutron-metadata-agent  
-关于neutron配置更为相信信息，参考[网站](https://wiki.openstack.org/wiki/Neutron/Metering/Bandwidth)
+关于neutron配置更为详细信息，参考[网站](https://wiki.openstack.org/wiki/Neutron/Metering/Bandwidth)
 
 
 ## ceilometer 常用cli命令
@@ -263,5 +263,5 @@ ceilometer alarm-state-get -a alarm-id
 
 
 参考：  
-[Openstack入门篇-Ceilometer](http://moyasu.win/openstack%E5%85%A5%E9%97%A8%E7%AF%87-ceilometer/)
+[Openstack入门篇-Ceilometer](http://moyasu.win/openstack%E5%85%A5%E9%97%A8%E7%AF%87-ceilometer/)  
 [ceilometer M 版本collector源码分析](http://www.wtoutiao.com/p/369hDEp.html)
