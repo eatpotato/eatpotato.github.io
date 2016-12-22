@@ -175,16 +175,17 @@ resources:
 | designate-master | OS::Nova::Server | 此虚拟机安装mysql rabbitmq keystone designate bind 服务 |
 
 ### 搭建步骤
-1.下载下面的yaml文件：
+1.创建下面的yaml文件：
 
 [designate-final.yaml](/files/designate-final.yaml)
+
 2. 执行命令(根据具体需要修改参数)：
 
 ```
 openstack stack create -t designate-final.yaml -p "key_name=$KEY_NAME image_id=$IMAGE_ID instance_type=$INSTANCE_TYPE network_id=$NETWORK_ID" STACK_NAME
 ```
 注意：由于我事先在镜像里安装了designate rabbitmq mysql bind keystone httpd 等相关包，所以此heat模板中并没有包的安装过程，如果用此模板安装，必须要使用安装了所有相关软件包的镜像（镜像必须为centos7系统）。等待两分钟左右便可。关于designate的原理和操作可以查看我的另一篇博客： [puppet-designate](http://xuefy.cn/2016/11/14/puppet-designate/)  
-另外如果镜像不包含相应的软件包，也可以下载下面的heat模板，此模板自带相应软件包的安装：
+另外如果镜像不包含相应的软件包，也可以创建下面的heat模板，此模板自带相应软件包的安装：
 [designate-final-full.yaml](/files/designate-final-full.yaml)
 
 
