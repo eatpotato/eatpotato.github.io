@@ -9,6 +9,7 @@ tags:
 
 ## heat基础知识
 本文可以在已安装openstack的环境下，快速搭建分布式designate服务。
+
 ### 使用到的heat 内部函数
 * get_attr
 
@@ -166,6 +167,7 @@ resources:
 | network_id | network id |
 
 ### 模板中各资源(resources)的含义
+
 | 资源名称 | 资源类型| 资源作用 | 
 |---|---|---|
 | dns_secgroup | OS::Neutron::SecurityGroup | 为创建的两台虚拟机配置安全组规则，允许53端口的入口流量，即允许外部向它们发送dns请求 |
@@ -175,7 +177,7 @@ resources:
 ### 搭建步骤
 1.下载下面的yaml文件：
 
-[](/files/designate-final.yaml)
+[designate-final.yaml](/files/designate-final.yaml)
 2. 执行命令(根据具体需要修改参数)：
 
 ```
@@ -183,7 +185,7 @@ openstack stack create -t designate-final.yaml -p "key_name=$KEY_NAME image_id=$
 ```
 注意：由于我事先在镜像里安装了designate rabbitmq mysql bind keystone httpd 等相关包，所以此heat模板中并没有包的安装过程，如果用此模板安装，必须要使用安装了所有相关软件包的镜像（镜像必须为centos7系统）。等待两分钟左右便可。关于designate的原理和操作可以查看我的另一篇博客： [puppet-designate](http://xuefy.cn/2016/11/14/puppet-designate/)  
 另外如果镜像不包含相应的软件包，也可以下载下面的heat模板，此模板自带相应软件包的安装：
-[](/files/designate-final-full.yaml)
+[designate-final-full.yaml](/files/designate-final-full.yaml)
 
 
 ### 扩展节点
