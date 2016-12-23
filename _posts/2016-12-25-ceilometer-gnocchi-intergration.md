@@ -82,6 +82,7 @@ ceilometer与gnocchi集成之后，除了ceilometer-alarm之外的api将变得�
 
 
 ```
+
 ---
 
 resources:
@@ -141,12 +142,12 @@ resources:
       - 'network.services.lb.incoming.bytes'
       - 'network.services.lb.total.connections'
       - 'network.services.lb.active.connections'
-  ```
+```
   
   gnocchi_resources.yaml文件默认定了较多的监控项，上面的例子定义了一些常用监控项。
   
-  archive_policy为采用的监控策略，可以通过下面的命令常看:  
-  ![](/img/gnocchi/gnocchi-archive_policy.png)  
+  archive_policy为采用的监控策略，可以通过下面的命令常看:   
+  ![](/img/gnocchi/gnocchi-archive-policy.png)  
   granularity为监控的时间间隔，timespan为保留时间
   
   
