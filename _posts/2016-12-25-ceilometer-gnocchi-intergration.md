@@ -76,3 +76,78 @@ resources_definition_file=gnocchi_resources.yaml
 ```
 
 ceilometer与gnocchi集成之后，除了ceilometer-alarm之外的api将变得不可用，dashboard也无法再查看到相应的记录。
+
+## gnocchi_resources.yaml
+配置resources_definition_file=gnocchi_resources.yaml后，监控项在gnocchi_resources.yaml文件定义，如：
+
+
+```
+---
+
+resources:
+  - resource_type: instance
+    archive_policy: 1days_per_sec
+    metrics:
+      - 'memory.usage'
+      - 'cpu_util'
+      - "disk.read.bytes"
+      - "disk.read.requests"
+      - "disk.write.bytes"
+      - "disk.write.requests"
+      - 'disk.read.requests.rate'
+      - 'disk.write.requests.rate'
+      - 'disk.read.bytes.rate'
+      - 'disk.write.bytes.rate'
+      - 'disk.capacity'
+      - 'disk.allocation'
+      - 'disk.usage'
+    attributes:
+      host: resource_metadata.host
+      image_ref: resource_metadata.image_ref
+      display_name: resource_metadata.display_name
+      flavor_id: resource_metadata.(instance_flavor_id|(flavor.id))
+      server_group: resource_metadata.user_metadata.server_group
+
+  - resource_type: instance_network_interface
+    archive_policy: 1days_per_sec
+    metrics:
+      - 'network.outgoing.packets.rate'
+      - 'network.incoming.packets.rate'
+      - 'network.outgoing.bytes.rate'
+      - 'network.incoming.bytes.rate'
+    attributes:
+      name: resource_metadata.vnic_name
+      instance_id: resource_metadata.instance_id
+
+  - resource_type: instance_disk
+    archive_policy: 1days_per_sec
+    metrics:
+      - 'disk.device.read.requests.rate'
+      - 'disk.device.write.requests.rate'
+      - 'disk.device.read.bytes.rate'
+      - 'disk.device.write.bytes.rate'
+      - 'disk.device.capacity'
+      - 'disk.device.allocation'
+      - 'disk.device.usage'
+    attributes:
+      name: resource_metadata.disk_name
+      instance_id: resource_metadata.instance_id
+
+  - resource_type: network
+    archive_policy: 1days_per_sec
+    metrics:
+      - 'bandwidth'
+      - 'network.services.lb.outgoing.bytes'
+      - 'network.services.lb.incoming.bytes'
+      - 'network.services.lb.total.connections'
+      - 'network.services.lb.active.connections'
+  ```
+  
+  gnocchi_resources.yaml文件默认定了较多的监控项，上面的例子定义了一些常用监控项。
+  
+  archive_policy为采用的监控策略，可以通过下面的命令常看:  
+  ![](/img/gnocchi/gnocchi-archive_policy.png)  
+  granularity为监控的时间间隔，timespan为保留时间
+  
+  
+  
