@@ -49,6 +49,45 @@ API：运行在管理节点，提供接口访问Data Store
 
 Compute Agent：采集本节点性能指标
 
+## ceilometer监控项
+
+Ceilometer原生支持的监控指标有很多，考虑到消息服务器和数据库的压力，根据项目需要，只保留需要的指标，其它默认裁剪。同时，扩展了部分指标。  
+
+1.虚拟机
+
+* cpu：cpu使用时间
+* cpu_util：cpu使用率
+* vcpus：使用vcpu数量
+* disk.total.size：磁盘总大小
+* memory：内存总大小
+* memory.usage：内存使用大小
+* disk.read.bytes：磁盘读字节数
+* disk.read.bytes.rate：磁盘读速率
+* disk.write.bytes：磁盘写字节数
+* disk.write.bytes.rate：磁盘写速率
+* network.incoming.bytes：网络incoming字节数
+* network.incoming.bytes：网络incoming字节数
+* network.incoming.bytes.rate：网络incoming速率
+* network.outgoing.bytes：网络outgoing字节数
+* network.outgoing.bytes.rate：网络outgoing速率
+
+2.物理机
+
+* compute.node.cpu.percent：cpu利用率
+* compute.node.disk.total：磁盘总大小
+* compute.node.disk.used：磁盘使用大小
+* compute.node.memory.total：内存总大小
+* compute.node.memory.used：内存使用大小
+* compute.node.disk.read.bytes：磁盘读字节数
+* compute.node.disk.read.bytes.rate：磁盘读速率
+* compute.node.disk.write.bytes：磁盘写字节数
+* compute.node.disk.write.bytes.rate：磁盘写速率
+* compute.node.network.incoming.bytes：网络incoming字节数
+* compute.node.network.incoming.bytes.rate：网络incoming速率
+* compute.node.network.outgoing.bytes：网络outgoing字节数
+* compute.node.network.outgoing.bytes.rate：网络outgoing速率
+* compute.node.network.bandwidth：物理网卡带宽
+
 ## ceilometer收集数据的方式
 
 OpenStack原始数据的收集方式有两种：

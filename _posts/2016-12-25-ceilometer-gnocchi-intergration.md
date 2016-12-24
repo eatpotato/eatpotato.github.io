@@ -55,7 +55,7 @@ size in bytes = (365 * 24 * 60 * 60)/5  × 9 = 56 764 800 bytes = 55 434 KiB = 5
 
 ## gnocchi 集成ceilometer
 
-gnocchi安装文档可以参考：[Ceilometer + Gnocchi + Aodh](http://www.cnblogs.com/multi-task/p/5553830.html)
+gnocchi安装文档可以参考：[Ceilometer + Gnocchi + Aodh](http://www.cnblogs.com/multi-task/p/5553830.html)  
 ceilometer.conf需要修改配置:
 
 
@@ -149,6 +149,13 @@ resources:
   archive_policy为采用的监控策略，可以通过下面的命令常看:   
   ![](/img/gnocchi/gnocchi-archive-policy.png)  
   granularity为监控的时间间隔，timespan为保留时间
+  
+  创建archive_policy的命令为：
+  
+```
+gnocchi archive-policy create -d granularity:1s,points:86400 1days_per_sec
+```
+创建archive_policy只需要指定granularity和points ，它们的乘积即为timespan
   
   
   
