@@ -9,19 +9,59 @@ tags:
 
 ## 安装ansible
 
-从源码安装的步骤:
+1.yum安装:
+RHEL()Centos)7版本：
 
 ```
-$ git clone git://github.com/ansible/ansible.git --recursive
-$ cd ./ansible
-$ source ./hacking/env-setup
+rpm -Uvh http://mirrors.zju.edu.cn/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+yum install ansible
 ```
-
-通过pip安装:
+2.Apt(Ubuntu)安装方式：
 
 ```
+apt-get install software-properties-common
+apt-add-repository ppa:ansible/ansible
+apt-get update
+apt-get install ansible
+```
+
+3.homebrew (Mac OSX)安装方式
+
+```
+brew update
+brew install Ansible
+```
+
+4.通过pip安装:
+
+```
+easy_install pip
 pip install ansible
 ```
+如果是在OS X系统上安装，编译器可能会有警告或出错，需要设置CFLAGS、CPPFLAGS环境变量：
+
+```
+sudo CFLAGS=-Qunused-arguments CPPFLAGS=-Qunused-arguments pip install ansible
+```
+
+##  配置运行环境
+
+### Ansible环境
+Ansible 配置文件是以.ini格式存储配置数据的，在Ansible中，几乎所有的配置项都可以通过Ansible的playbook或环境变量来重新赋值。在运行Ansible命令式，命令将会按照预先设定的顺序查找配置文件，如下所示：
+
+1）ANSIBLE_CONFIG: 首先，Ansible命令会检查环境变量，及这个环境变量指向的配置文件。  
+2）./ansible.cfg: 其次，将会检查当前目录下的ansible.cfg配置文件  
+3）~/ansible.cfg: 再次，将会检查当前用户home目录下的.ansible.cfg配置文件  
+4) /etc/ansible/ansible.cfg: 最后，将会检查再用软件包管理工具安装Ansible时自动产生的配置文件。
+
+### ansible.cfg常用配置参数
+
+* inventory  这个参数表示资源清单inventory文件的位置，资源清单就是被管理主机列表。如：inventory = /etc/ansible/hosts
+* forks  设置默认情况下Ansible最多能有多少个进程同时工作，默认设置最多5个进程并行处理。如： forks = 5
+* sudo_user  这是设置默认执行命令的用户，如： sudo_user = root
+* remote_port  这是制定连接被管节点的管理端口，默认是22。除非设置了特殊的SSH端口，不然这个参数一般是不需要修改的。如：reomte_ssh = 22
+* timeout  这是设置SSH连接的超时间隔，单位是秒。配置示例如下：timeout = 60
+
 
 ## 第一条ansible命令
 
@@ -32,6 +72,9 @@ pip install ansible
 10.0.81.33
 
 注意：你的public SSH key必须在这些系统的“authorized_keys”中
+
+使用list-hosts参数进行验证：  
+![](/img/ansible/ansible-list-hosts.png)
 
 现在对你的管理节点运行一个命令:
 
@@ -139,4 +182,34 @@ southeast
 northeast
 southwest
 northwest
+```
+
+### 分文件定义 Host 和 Group 变量
+在 inventory 主文件中保存所有的变量并不是最佳的方式.还可以保存在独立的文件中,这些独立文件与 inventory 文件保持关联. 不同于 inventory 文件(INI 格式),这些独立文件的格式为 YAML.
+假设 inventory 文件的路径为:
+
+```
+/etc/ansible/hosts
+```
+
+假设有一个主机名为 ‘foosball’, 主机同时属于两个组,一个是 ‘raleigh’, 另一个是 ‘webservers’. 那么以下配置文件(YAML 格式)中的变量可以为 ‘foosball’ 主机所用.依次为 ‘raleigh’ 的组变量,’webservers’ 的组变量,’foosball’ 的主机变量:
+
+```
+/etc/ansible/group_vars/raleigh
+/etc/ansible/group_vars/webservers
+/etc/ansible/host_vars/foosball
+```
+
+Tip: Ansible 1.2 及以上的版本中,group_vars/ 和 host_vars/ 目录可放在 inventory 目录下,或是 playbook 目录下. 如果两个目录下都存在,那么 playbook 目录下的配置会覆盖 inventory 目录的配置
+
+## Parallelism and Shell Commands
+举一个例子
+
+这里我们要使用 Ansible 的命令行工具来重启 Atlanta 组中所有的 web 服务器,每次重启10个.
+
+我们先设置 SSH-agent,将私钥纳入其管理:
+
+```
+$ ssh-agent bash
+$ ssh-add ~/.ssh/id_rsa
 ```
