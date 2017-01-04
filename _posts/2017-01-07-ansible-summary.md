@@ -10,7 +10,7 @@ tags:
 ## 安装ansible
 
 1.yum安装:
-RHEL()Centos)7版本：
+RHEL(Centos)7版本：
 
 ```
 rpm -Uvh http://mirrors.zju.edu.cn/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
@@ -35,7 +35,7 @@ brew install Ansible
 4.通过pip安装:
 
 ```
-easy_install pip
+sodu easy_install pip
 pip install ansible
 ```
 如果是在OS X系统上安装，编译器可能会有警告或出错，需要设置CFLAGS、CPPFLAGS环境变量：
@@ -65,11 +65,11 @@ Ansible 配置文件是以.ini格式存储配置数据的，在Ansible中，几�
 
 ## 第一条ansible命令
 
-编辑(或创建)/etc/ansible/hosts文件，在其中加入被管理的远程主机:
-[merge]
-10.0.81.31
-10.0.81.32
-10.0.81.33
+编辑(或创建)/etc/ansible/hosts文件，在其中加入被管理的远程主机:  
+[merge]  
+10.0.81.31  
+10.0.81.32  
+10.0.81.33  
 
 注意：你的public SSH key必须在这些系统的“authorized_keys”中
 
@@ -203,13 +203,126 @@ northwest
 Tip: Ansible 1.2 及以上的版本中,group_vars/ 和 host_vars/ 目录可放在 inventory 目录下,或是 playbook 目录下. 如果两个目录下都存在,那么 playbook 目录下的配置会覆盖 inventory 目录的配置
 
 ## Parallelism and Shell Commands
-举一个例子
+目前ansible自带很多模块，我们可以使用ansible-doc -l显示所有自带模块，还可以通过ansible-doc "模块名"，查看模块的介绍以及案例。
 
-这里我们要使用 Ansible 的命令行工具来重启 Atlanta 组中所有的 web 服务器,每次重启10个.
+下面举一些常见的命令：
 
-我们先设置 SSH-agent,将私钥纳入其管理:
+1.shell命令  
+![](/img/ansible/ansible-shell-command.png)  
+
+-o, --one-line  Try to output everything on one line.
+
+2.复制文件  
+![](/img/ansible/ansible-copy-command.png)
+
+3.包和服务管理  
+![](/img/ansible/ansible-yum-command.png)
+
+
+## playbook
+Playbooks 是 Ansible的配置,部署,编排语言.他们可以被描述为一个需要希望远程主机执行命令的方案,或者一组IT程序运行的命令集合.
+playbook 文件格式为YAML语法，在编写playbook前需要对YAML有一定的了解，关于YAML语法可以通过 [yaml官网](http://yaml.org/spec/1.2/spec.html)进行学习。
+
+playbook 由一个或多个 ‘plays’ 组成.它的内容是一个以 ‘plays’ 为元素的列表。在 play 之中,一组机器被映射为定义好的角色.在 ansible 中,play 的内容,被称为 tasks,即任务.在基本层次的应用中,一个任务是一个对 ansible 模块的调用,
+
+下面一个 playbook示例,其中仅包含一个 play:  
 
 ```
-$ ssh-agent bash
-$ ssh-add ~/.ssh/id_rsa
+---
+- hosts: webservers
+  vars:
+    http_port: 80
+    max_clients: 200
+  remote_user: root
+  tasks:
+  - name: ensure apache is at the latest version
+    yum: pkg=httpd state=latest
+  - name: write the apache config file
+    template: src=/srv/httpd.j2 dest=/etc/httpd.conf
+    notify:
+    - restart apache
+  - name: ensure apache is running
+    service: name=httpd state=started
+  handlers:
+    - name: restart apache
+      service: name=httpd state=restarted
 ```
+
+在 [ansible-examples](https://github.com/ansible/ansible-examples) 中有很多实例，如果你希望深入学习可以在单独的页面打开它。
+
+### Task
+每一个 play 包含了一个 task 列表（任务列表）.一个 task 在其所对应的所有主机上（通过 host pattern 匹配的所有主机）执行完毕之后,下一个 task 才会执行.
+
+### playbook变量与引用
+1.通过inventory文件定义主机以及主机变量  
+在/etc/ansible/hosts中定义主机组和组变量如下：
+
+```
+merge]
+10.0.81.31
+10.0.81.32
+10.0.81.33
+
+[merge:vars]
+key=test
+```
+创建playbook文件test.yaml如下：
+
+```
+---
+- hosts: merge
+  gather_facts: False
+  tasks:
+  - name: display Host Variable from hostfile
+    debug: msg="The key value is {{ key }}"
+```
+
+运行playbook文件：
+
+![](/img/ansible/ansible-playbook-example.png)
+
+2.通过文件定义主机以及主机组变量
+我们可以通过host_vars和group_vars目录来针对主机和主机组定义变量。
+
+使用yum安装Ansible的配置文件在/etc/ansible/目录下，我们在该目录下新建host_vars和group_vars目录,如下：
+![](/img/ansible/ansible-tree.png)
+
+3.通过ansible-playbook命令行传入
+可以通过-e 命令传入变量
+
+```
+ansbile-playbook test.yaml -e "key=test"
+```
+ansible-playbook目前还支持YAML和JSON的方式传入变量
+
+```
+cat var.yaml
+---
+key: test
+cat var.json
+{"key": "test"}
+```
+4.可以在playbook文件内通过vars字段定义变量
+5.可以在playbook文件内通过vars_files字段引用变量，首先把所有的变量定义在某个文件内，然后再playbook文件内使用vars_files参数引用这个变量文件
+6.使用register内的变量
+Ansible playbook内task之间可以互相传递数据，比如第2个task需要获得第1个task的执行结果。
+
+我们可以通过下面的方式：
+
+```
+vim test01.yaml
+---
+- hosts: merge
+  gather_facts: False
+  tasks:
+  - name: register variable
+    shell: hostname
+    register: info
+  - name: display variable
+    debug: msg="The key value is {{ info }}"
+```
+
+![](/img/ansible/ansible-register-command.png)
+
+info的结果是一段python字典数据，里面存储着很多信息，包括执行时间状态变化输出等。
+### Roles
