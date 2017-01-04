@@ -56,11 +56,11 @@ Ansible 配置文件是以.ini格式存储配置数据的，在Ansible中，几�
 
 ### ansible.cfg常用配置参数
 
-* inventory  这个参数表示资源清单inventory文件的位置，资源清单就是被管理主机列表。如：inventory = /etc/ansible/hosts
-* forks  设置默认情况下Ansible最多能有多少个进程同时工作，默认设置最多5个进程并行处理。如： forks = 5
-* sudo_user  这是设置默认执行命令的用户，如： sudo_user = root
-* remote_port  这是制定连接被管节点的管理端口，默认是22。除非设置了特殊的SSH端口，不然这个参数一般是不需要修改的。如：reomte_ssh = 22
-* timeout  这是设置SSH连接的超时间隔，单位是秒。配置示例如下：timeout = 60
+1.inventory  这个参数表示资源清单inventory文件的位置，资源清单就是被管理主机列表。如：inventory = /etc/ansible/hosts  
+2.forks  设置默认情况下Ansible最多能有多少个进程同时工作，默认设置最多5个进程并行处理。如： forks = 5  
+3.sudo_user  这是设置默认执行命令的用户，如： sudo_user = root  
+4.remote_port  这是制定连接被管节点的管理端口，默认是22。除非设置了特殊的SSH端口，不然这个参数一般是不需要修改的。如：reomte_ssh = 22  
+5.timeout  这是设置SSH连接的超时间隔，单位是秒。配置示例如下：timeout = 60  
 
 
 ## 第一条ansible命令
@@ -325,4 +325,134 @@ vim test01.yaml
 ![](/img/ansible/ansible-register-command.png)
 
 info的结果是一段python字典数据，里面存储着很多信息，包括执行时间状态变化输出等。
+
+### playbook 循环
+
+1.标准loops  
+example:
+
+
+```
+---
+- hosts: merge
+  gather_facts: False
+  tasks:
+  - name: debug loops
+    debug: msg="name ---------->  {{ item }}"
+    with_items:
+      - one
+      - two
+```
+
+![](/img/ansible/ansible-standard-loops.png)
+
+with_items的值是python list数据结构， 可以理解为每个task会循环读取list里面的值，然后key的名称是item
+
+2.嵌套loops
+
+```
+---
+- hosts: merge
+  gather_facts: False
+  tasks:
+  - name: debug loops
+    debug: msg="name ---------->  {{ item[0] }} ---------> {{ item[1] }}"
+    with_nested:
+      - ['A']
+      - ['a','b','c']
+```
+
+![](/img/ansible/ansible-nesting-loops.png)
+
+3.条件判断loops
+有时候执行一个task之后，我们需要检测这个task的结果是否达到了预想状态，如果没有就需要退出整个playbook执行，这个时候我们就需要对某个task结果一直循环检测了，如下所示:
+
+```
+---
+- hosts: merge
+  gather_facts: False
+  tasks:
+  - name: debug loops
+    shell: cat /root/test.txt
+    register: host
+    until: host.stdout.startswith("test")
+    retries: 5
+    delay: 5
+```
+
+5秒执行一次 cat /root/test.txt将结果register给host，然后判断host.stdout.startwith的内容是不是test字符串开头，如果条件成立，此task运行完成，如果条件不成立，5秒以后重试，5此后还不满足条件，此task运行失败。
+
+其他的循环还有：散列loops、文件匹配loops、随机选择loops、文件优先匹配loops、register loops
+
+### playbook lookups
+Ansible还支持从外部数据拉取信息，比如我们可以从数据库拉取信息，然后赋值给一个变量。
+
+1.lookups file
+
+```
+---
+- hosts: merge
+  gather_facts: False
+  vars:
+    contents: "{{ lookup('file', '/root/openrc') }}"
+  tasks:
+  - name: debug lookups
+    debug: msg="The contents is {% for i in contents.split("\n") %} {{ i }} {% endfor %}"
+```
+
+2.lookups password
+lookup('password', 'file_path')
+它会对传入的内容进行加密处理
+
+### playbook conditionals
+目前Ansible所有conditionals方式都是通过使用when进行判断，when的值是一个条件表达式，如果条件判断成立，这个task就执行某个操作，否则，该task不执行。
+
+```
+tasks:
+  - name: "shutdown Debian flavored systems"
+    command: /sbin/shutdown -t now
+    when: ansible_os_family == "Debian"
+```
+如果想查看哪些facts变量可以引用,可以在命令行上通过调用setup module命令可以查看
+  
+```
+ansible hostname -m setup 
+```
+    
 ### Roles
+怎样组织 playbook 才是最好的方式呢？简单的回答就是：使用 roles ! Roles 基于一个已知的文件结构，去自动的加载某些 vars_files，tasks 以及 handlers。基于 roles 对内容进行分组，使得我们可以容易地与其他用户分享 roles 。  
+一个项目的结构如下:
+
+```
+site.yml
+webservers.yml
+fooservers.yml
+roles/
+   common/
+     files/
+     templates/
+     tasks/
+     handlers/
+     vars/
+     defaults/
+     meta/
+   webservers/
+     files/
+     templates/
+     tasks/
+     handlers/
+     vars/
+     defaults/
+     meta/
+```
+
+如果 roles 目录下有文件不存在，这些文件将被忽略。比如 roles 目录下面缺少了 ‘vars/’ 目录，这也没关系。
+当一些事情不需要频繁去做时，你也可以为 roles 设置触发条件，像这样:
+
+```
+---
+
+- hosts: webservers
+  roles:
+    - { role: some_role, when: "ansible_os_family == 'RedHat'" }
+```
