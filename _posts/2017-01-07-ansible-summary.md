@@ -418,8 +418,63 @@ tasks:
 ```
 ansible hostname -m setup 
 ```
+
+### TAGS
+如果你有一个很大的playbook，而你只想run其中的某个task，这个时候tags是你的最佳选择。
+
+一、最常见的使用形式:
+
+```
+tasks:
+ 
+    - yum: name={{ item }} state=installed
+      with_items:
+         - httpd
+         - memcached
+      tags:
+         - packages
+ 
+    - template: src=templates/src.j2 dest=/etc/foo.conf
+      tags:
+         - configuration
     
-### Roles
+```
+此时若你希望只run其中的某个task，这run 的时候指定tags即可:
+
+```
+ansible-playbook example.yml --tags "configuration,packages"   #run 多个tags
+ansible-playbook example.yml --tags packages                   # 只run 一个tag
+```
+
+相反，也可以跳过某个task
+
+```
+ansible-playbook example.yml --skip-tags configuration
+```
+
+二、tags 和role 结合使用
+tags 这个属性也可以被应用到role上，例如:
+
+```
+roles:
+  - { role: webserver, port: 5000, tags: [ 'web', 'foo' ] }
+```
+
+三、tags和include结合使用
+
+```
+- include: foo.yml tags=web,foo
+```
+这样，fool.yml 中定义所有task都将被执行
+
+四、系统中内置的特殊tags：
+
+  always、tagged、untagged、all 是四个系统内置的tag，有自己的特殊意义。  
+  always: 指定这个tag 后，task任务将永远被执行，而不用去考虑是否使用了--skip-tags标记  
+  tagged: 当 --tags 指定为它时，则只要有tags标记的task都将被执行,--skip-tags效果相反  
+  untagged: 当 --tags 指定为它时，则所有没有tag标记的task 将被执行,--skip-tags效果相反  
+  all: 这个标记无需指定，ansible-playbook 默认执行的时候就是这个标记.所有task都被执行  
+## Roles
 怎样组织 playbook 才是最好的方式呢？简单的回答就是：使用 roles ! Roles 基于一个已知的文件结构，去自动的加载某些 vars_files，tasks 以及 handlers。基于 roles 对内容进行分组，使得我们可以容易地与其他用户分享 roles 。  
 一个项目的结构如下:
 
@@ -456,3 +511,89 @@ roles/
   roles:
     - { role: some_role, when: "ansible_os_family == 'RedHat'" }
 ```
+
+## Ansible最佳实践
+### 优化Ansible速度
+1.开启SSH长连接
+如果被管理机器的SSH -V版本高于5.6时，我们可以直接在ansible.cfg文件中设置SSH长连接。设置参数如下：
+
+```
+sh_args = -o ControlMaster=auto -o Controlpersist=5d
+```
+Controlpersist=5d  设置整个长连接保持时间为5天
+
+2.开启pipelining
+如果开启了pipelining ,生成好的本地Python脚本PUT到远端服务器的过程会在SSH的会话中进行，这样可以大大提高整个执行效率。在ansible.cfg中设置：
+
+```
+pipelining = True
+```
+
+3.设置facts缓存
+如果playbook不需要facts信息，可以在playbook中设置gather_facts:Fasle来提高playbook效率。但是如果我们既想在每次执行playbook的时候能搜集facts,又想加速这个收集过程，那么就需要配置facts缓存了。
+可以在ansible.cfg中配置fact缓存使用redis:
+
+```
+[defaults]
+gathering = smart
+fact_caching = redis  #jsonfile等，使用json 需要指定fact_caching_connection指定存放路径
+fact_caching_timeout = 86400
+
+```
+
+### 灰度发布与检测
+1.语法检测
+在编写完playbook或者role之后一定要养成进行语法检测的习惯，直接使用ansible-playbook命令的 --syntax-check参数即可。
+2.灰度发布
+进行预运行之前，我们需要把一个或者多个task使用delegate_to参数指定到一台设备上进行测试。
+
+## Ansible与openstack
+
+```
+---
+- hosts: localhost
+  gather_facts: False
+  vars:
+    auth_url: http://10.0.84.52:35357/v3
+    login_username: admin
+    login_tenant_name: admin
+    login_password: 
+    image_id: 63a7ea8d-2fc4-442b-8455-261b93aeb909
+    keypair_name: mykey
+    private_net: 1b3c98f2-7cbb-459f-bb1f-3dbb4facee13
+    flavor_id: 1
+  connection: local
+  tasks:
+  - name: create compute
+    nova_compute:
+      auth_url: "{{ auth_url }}"
+      login_username: "{{ login_username }}"
+      login_password: "{{ login_password }}"
+      login_tenant_name: "{{ login_tenant_name }}"
+      security_groups: default
+      state: present
+      name: "test-xue-01"
+      image_id: "{{ image_id }}"
+      key_name: "{{ keypair_name }}"
+      flavor_id: "{{ flavor_id }}"
+      region_name: RegionOne
+      nics:
+        - net-id: "{{ private_net }}"
+    register: openstack
+  - name: pull floating ip address
+    local_action: floating
+      auth_url={{ auth_url }} username={{ login_username }} password={{ login_password }} tenant={{ login_tenant_name }}
+    register: floating_ip
+
+  - name: bond flaoting ip to instance
+    local_action: bondip_openstack
+      auth_url={{ auth_url }} username={{ login_username }} password={{ login_password }} tenant={{ login_tenant_name }} instance_id={{ openstack.id }}floating_ip={{ floating_ip.res }}
+```
+
+更多资料可以查看：[openstack-ansible](https://github.com/openstack/openstack-ansible)
+
+
+参考：  
+[Ansible中文权威指南](http://www.ansible.com.cn/)  
+[ “诡迹” 博客](http://unixman.blog.51cto.com/10163040/1674198)  
+[Ansible自动化运维技术与最佳实践](http://product.dangdang.com/23958049.html)
