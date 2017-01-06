@@ -474,7 +474,9 @@ roles:
   tagged: 当 --tags 指定为它时，则只要有tags标记的task都将被执行,--skip-tags效果相反  
   untagged: 当 --tags 指定为它时，则所有没有tag标记的task 将被执行,--skip-tags效果相反  
   all: 这个标记无需指定，ansible-playbook 默认执行的时候就是这个标记.所有task都被执行  
+
 ## Roles
+
 怎样组织 playbook 才是最好的方式呢？简单的回答就是：使用 roles ! Roles 基于一个已知的文件结构，去自动的加载某些 vars_files，tasks 以及 handlers。基于 roles 对内容进行分组，使得我们可以容易地与其他用户分享 roles 。  
 一个项目的结构如下:
 
@@ -592,6 +594,49 @@ fact_caching_timeout = 86400
 
 更多资料可以查看：[openstack-ansible](https://github.com/openstack/openstack-ansible)
 
+## 几个实用的ansible命令：
+
+1.管理域名解析器:
+
+
+```
+- name: Create DNS File
+  register: config_resolv
+  template: src=resolv.conf.j2 dest=/etc/resolv.conf
+  tags: firsthyper_init
+```
+由于我使用了role来组织playbook,roleresolv.conf.j2在相应role的templates目录下.
+
+2.安装常用软件：
+
+```
+- name: Install ntp,puppet,rsync
+  register: install_package
+  yum: name={{item}} state=latest
+  with_items:
+     - ntpdate
+     - puppet
+     - rsync
+```
+3.同步时间
+
+```
+- name: Sync time
+  register: sync_time
+  shell: systemctl stop ntpd && sleep 5 && /usr/sbin/ntpdate {{ ntp_server }} 1 >/dev/null 2>&1 && systemctl start ntpd
+```
+
+ntp_server定义在group_vars中.
+
+
+4.查看数据库日志文件名称
+
+```
+- name: Fetch Mysql Master Log File
+  register: master_log_file
+  shell: mysql -e "show master status" | grep mysql | awk '{print $1}'
+  delegate_to: "{{ mysql_master }}"
+```
 
 参考：  
 [Ansible中文权威指南](http://www.ansible.com.cn/)  
