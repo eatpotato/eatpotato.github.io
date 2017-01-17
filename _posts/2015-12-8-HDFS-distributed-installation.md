@@ -3,6 +3,7 @@ layout: post
 title: HDFS完全分布式安装及基本操作
 date:       2015-12-8
 author:     xue
+catalog:    true
 tags:
     - hadoop
 ---

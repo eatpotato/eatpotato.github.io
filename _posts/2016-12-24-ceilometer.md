@@ -3,6 +3,7 @@ layout:     post
 title:      ceilometer原理及自动化部署
 date:       2016-12-24
 author:     xue
+catalog:    true
 tags:
     - openstack
 ---

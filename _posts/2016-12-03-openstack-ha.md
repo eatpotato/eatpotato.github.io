@@ -3,6 +3,7 @@ layout:     post
 title:      openstack高可用
 date:       2016-12-03
 author:     xue
+catalog:    true
 tags:
     - openstack
 ---

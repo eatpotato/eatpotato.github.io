@@ -3,6 +3,7 @@ layout: post
 title: 虚拟化
 date:       2015-12-24
 author:     xue
+catalog:    true
 tags:
     - 虚拟化
 ---

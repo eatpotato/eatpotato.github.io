@@ -3,6 +3,7 @@ layout: post
 title: Linux常用命令
 date:       2015-12-13
 author:     xue
+catalog:    true
 tags:
     - linux
 ---

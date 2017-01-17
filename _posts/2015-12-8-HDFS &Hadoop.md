@@ -3,6 +3,7 @@ layout: post
 title: HDFS原理
 date:       2015-12-8
 author:     xue
+catalog:    true
 tags:
     - hadoop
 ---

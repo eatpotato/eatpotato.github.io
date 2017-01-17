@@ -3,6 +3,7 @@ layout: post
 title: 对三种分布式存储的学习以及认识
 date:       2015-12-24
 author:     xue
+catalog:    true
 tags:
     - openstack
 ---

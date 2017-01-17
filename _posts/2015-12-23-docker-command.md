@@ -3,6 +3,7 @@ layout: post
 title: Docker初探
 date:       2015-12-23
 author:     xue
+catalog:    true
 tags:
     - docker
 ---

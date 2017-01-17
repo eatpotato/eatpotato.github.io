@@ -3,6 +3,7 @@ layout:     post
 title:      ansible总结
 date:       2017-01-07
 author:     xue
+catalog:    true
 tags:
     - ansible
 ---

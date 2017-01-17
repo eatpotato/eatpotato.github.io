@@ -3,6 +3,7 @@ layout:     post
 title:      通过Heat快速搭建分布式designate服务
 date:       2016-12-10
 author:     xue
+catalog:    true
 tags:
     - openstack
 ---
