@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      gnocchi原理及与ceilometer的集成
-date:       2016-12-24
+date:       2016-12-25
 author:     xue
 tags:
     - openstack

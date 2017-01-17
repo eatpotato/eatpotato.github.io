@@ -326,6 +326,16 @@ vim test01.yaml
 
 info的结果是一段python字典数据，里面存储着很多信息，包括执行时间状态变化输出等。
 
+### 变量的优先级
+如果同样名称的变量在多个地方都有定义,那么采纳是有个确定的顺序,如下:
+
+1.xtra vars (在命令行中使用 -e)优先级最高，如:ansible-playbook -e var=value  
+2.然后是在inventory中定义的连接变量(比如ansible_ssh_user)  
+3.接着是大多数的其它变量(命令行转换,play中的变量,included的变量,role中的变量等)  
+4.然后是在inventory定义的其它变量  
+5.然后是由系统发现的facts  
+6.然后是 "role默认变量", 这个是最默认的值,很容易丧失优先权
+
 ### playbook 循环
 
 1.标准loops  
@@ -348,6 +358,22 @@ example:
 
 with_items的值是python list数据结构， 可以理解为每个task会循环读取list里面的值，然后key的名称是item
 
+
+在copy和tempalate模块里面,你能够使用ansible去查找一组的文件.然后默认使用第一个文件.这能够让你达到效果是,当第一个文件不存在时,会查找第二个文件,如此类推知道最后一个文件还不存在就报fail.使用first_available_file这个关键字便可以到上述效果.
+
+```
+---
+- name: Install an Apache config file
+  hosts: ansibletest
+  user: root
+  tasks:
+   - name: Get the best match for the machine
+     copy: dest=/etc/apache.conf src={{ item }}
+     first_available_file:
+      - files/apache/{{ ansible_os_family }}-{{ ansible_architecture }}.cfg
+      - files/apache/default-{{ ansible_architecture }}.cfg
+      - files/apache/default.cfg  
+```
 2.嵌套loops
 
 ```
