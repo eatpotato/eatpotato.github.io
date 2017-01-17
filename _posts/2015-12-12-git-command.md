@@ -3,6 +3,7 @@ layout: post
 title: Git常用命令清单
 date:       2015-12-12
 author:     xue
+author:     xue
 tags:
     - git
 ---
