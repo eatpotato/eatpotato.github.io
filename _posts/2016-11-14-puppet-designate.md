@@ -470,7 +470,7 @@ Designate工作流程：
 * bind使用axfr来请求同步mdns  
 * mdns从数据库中读取相应的domain信息来响应axfr请求
 
-###Target vs. Nameserver
+### Target vs. Nameserver
 当通过designate 增加／修改／删除记录时，会通过target 去write changes。  
 当dns客户端去查询记录时，则会通过nameserver.  
 以本次实验环境为例，当通过designate创建一个名为example.com的domain时，安装上面的pool.yaml配置，相当于执行了这两条命令：
@@ -525,6 +525,7 @@ example.com.		3600	IN	NS	server-250.2.stage.polex.io.
 ;; WHEN: Fri Nov 04 18:45:55 CST 2016
 ;; MSG SIZE  rcvd: 130
 ```
+
 ### Hidden Master
 前面有提到过，当我们创建一个名为example.com的domain时，执行的rndc命令都指定master host：10.0.2.250， port:5354
 在designate.conf的定义中，我们可以看到：
@@ -543,7 +544,7 @@ query_enforce_tsig = False
 这样的好处就是，如果250，249有公网ip,它的53接口能被访问，那么它的记录是不能通过外网来更改的（外网只能查询），对于dns记录的更改只能通过内网（10.0.2.250）designate api的方式。
 
 ## 使用场景
-###解析私有域名
+### 解析私有域名
 
 ```
 ＃创建一个domain
@@ -580,7 +581,7 @@ example03.com.		3600	IN	NS	server-249.2.stage.polex.io.
 
 ```
 
-###与nova和neutron集成
+### 与nova和neutron集成
 designate-sink 通过nova handler 和 neutron handler，自动生成域名资源记录，比如当监听到Nova的compute.instance.create.end事件通知后，自动创建一条对应于刚创建的实例的A记录；当监听到Nuetron的floatingip.update.end事件通知后，自动更新一条相应的A记录。
 一个domain如下：
 
