@@ -142,14 +142,14 @@ ceph-deploy mon create-initial
 {cluster-name}.bootstrap-rgw.keyring
 
 
-5.添加两个 OSD 
-登录test-ceph-2:
+5.添加两个 OSD   
+登录test-ceph-2执行:
 
 ```
 mkdir /var/local/osd0
 ```
 
-登录test-ceph-3:
+登录test-ceph-3执行:
 
 ```
 mkdir /var/local/osd1
@@ -170,7 +170,7 @@ ceph-deploy osd activate test-ceph-2:/var/local/osd0 test-ceph-3:/var/local/osd1
 6.用 ceph-deploy 把配置文件和 admin 密钥拷贝到mon节点和osd节点，这样你每次执行 Ceph 命令行时就无需指定 monitor 地址和 ceph.client.admin.keyring 了:
 
 ```
-ceph-deploy admin server-52 test-ceph-1 test-ceph-2 test-ceph-3
+ceph-deploy admin test-ceph-1 test-ceph-2 test-ceph-3
 ```
 
 7.确保你对 ceph.client.admin.keyring 有正确的操作权限。
