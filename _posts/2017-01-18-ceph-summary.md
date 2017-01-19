@@ -56,3 +56,20 @@ PG是一个逻辑概念，我们linux系统中可以直接看到对象，但是�
 
 ## ceph-deploy快速安装
 
+```
+yum install ceph-deploy
+```
+如果安装了firewalld,那么你需要：
+firewall-cmd --zone=public --add-port=6789/tcp --permanent
+
+如果安装了firewalld,那么你需要：
+firewall-cmd --zone=public --add-port=6789/tcp --permanent
+ 
+若使用 iptables,要开放 Ceph Monitors 使用的 6789 端口和 OSD 使用的 6800:7300 端口范围:
+ 
+iptables -A INPUT -i {iface} -p tcp -s {ip-address}/{netmask} --dport 6789 -j ACCEPT
+/sbin/service iptables save
+在 CentOS 和 RHEL 上， SELinux 默认为 Enforcing 开启状态。为简化安装，我们建议把 SELinux 设置为 Permissive 或者完全禁用，也就是在加固系统配置前先确保集群的安装、配置没问题。用下列命令把 SELinux 设置为 Permissive ：
+ 
+setenforce 0
+
