@@ -531,7 +531,7 @@ Journal的作用类似于mysql innodb引擎中的事物日志系统。当有突�
 
 journal也可以使用单独的数据盘，只需要在hieradata中传递相应的设备名即可。
 
-openstack/puppet-ceph 传osds参数不支持wwn的方式
+openstack/puppet-ceph 传osds参数不支持wwn的方式,因为ceph-disk当前不支持使用wwn来作为磁盘标识的输入参数
 
 ## puppet执行过程分析
 创建mon的大致过程如下：
@@ -579,7 +579,7 @@ chmod 0444 ${keyring_path}
 touch /etc/ceph/${cluster_name}.client.admin.keyring
 ```
 
-5.用监视器图和密钥环组装守护进程所需的初始数据，创建done,sysvinit空文件
+5.初始化monitor服务，创建done,sysvinit空文件
 
 ```
 mon_data=\$(ceph-mon ${cluster_option} --id ${id} --show-config-value mon_data) 
