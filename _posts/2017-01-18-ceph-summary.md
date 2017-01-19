@@ -892,6 +892,235 @@ ceph osd down {osd-num}
 ceph osd out {osd-number}
 ```
 
+## CRUSH 图
+CRUSH算法通过计算数据存储位置来确定如何存储和检索。 CRUSH 授权 Ceph 客户端直接连接 OSD ，而非通过一个中央服务器或经纪人。数据存储、检索算法的使用，使 Ceph 避免了单点故障、性能瓶颈、和伸缩的物理限制。
+
+CRUSH图包含 OSD 列表、把设备汇聚为物理位置的“桶”列表、和指示 CRUSH 如何复制存储池里的数据的规则列表。
+
+
+CRUSH图主要有 4 个主要段落：  
+1.设备  
+设备的格式：
+
+```
+#devices
+device {num} {osd.name}
+```
+2.桶类型： 定义了 CRUSH 分级结构里要用的桶类型（ types ）  
+如：  
+
+```
+# types
+type 0 osd
+type 1 host
+type 2 chassis
+type 3 rack
+type 4 row
+type 5 pdu
+type 6 pod
+type 7 room
+type 8 datacenter
+type 9 region
+type 10 root
+```
+
+3.桶例程： 定义了桶类型后，还必须声明主机的桶类型、以及规划的其它故障域。  
+格式：
+
+```
+[bucket-type] [bucket-name] {
+        id [a unique negative numeric ID]
+        weight [the relative capacity/capability of the item(s)]
+        alg [the bucket type: uniform | list | tree | straw ]
+        hash [the hash type: 0 by default]
+        item [item-name] weight [weight]
+}  
+```
+
+各个桶都用了一种哈希算法，当前 Ceph 仅支持 rjenkins1 ，输入 0 表示哈希算法设置为 rjenkins1 。
+
+如下面这个例子：
+
+![](/img/ceph/ceph-bucket.png)
+
+定义的桶例程为：
+
+```
+host node1 {
+        id -1
+        alg straw
+        hash 0
+        item osd.0 weight 1.00
+        item osd.1 weight 1.00
+}
+
+host node2 {
+        id -2
+        alg straw
+        hash 0
+        item osd.2 weight 1.00
+        item osd.3 weight 1.00
+}
+
+rack rack1 {
+        id -3
+        alg straw
+        hash 0
+        item node1 weight 2.00
+        item node2 weight 2.00
+}
+```
+此例中，机柜桶不包含任何 OSD ，它只包含低一级的主机桶、以及其内条目的权重之和
+
+4.规则： 由选择桶的方法组成。
+
+规则格式如下：
+
+```
+rule <rulename> {
+
+        ruleset <ruleset>
+        type [ replicated | erasure ]
+        min_size <min-size>
+        max_size <max-size>
+        step take <bucket-type>
+        step [choose|chooseleaf] [firstn|indep] <N> <bucket-type>
+        step emit
+}
+
+```
+各字段含义如下
+ 
+4.1ruleset
+
+&emsp;&emsp;描述:	区分一条规则属于某个规则集的手段。给存储池设置规则集后激活。  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;类型:	Integer  
+&emsp;&emsp;是否必需:	Yes  
+&emsp;&emsp;默认值:	0  
+
+4.2type
+
+&emsp;&emsp;描述:	为硬盘（复制的）或 RAID 写一条规则。  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;类型:	String  
+&emsp;&emsp;是否必需:	Yes  
+&emsp;&emsp;默认值:	replicated  
+&emsp;&emsp;合法取值:	当前仅支持 replicated 和 erasure  
+
+4.3min_size
+
+&emsp;&emsp;描述:	如果一个归置组副本数小于此数， CRUSH 将不应用此规则。  
+&emsp;&emsp;类型:	Integer  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;是否必需:	Yes  
+&emsp;&emsp;默认值:	1  
+
+4.4max_size
+
+&emsp;&emsp;描述:	如果一个归置组副本数大于此数， CRUSH 将不应用此规则。  
+&emsp;&emsp;类型:	Integer  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;是否必需:	Yes  
+&emsp;&emsp;默认值:	10  
+
+4.5step take <bucket-name>
+
+&emsp;&emsp;描述:	选取桶名并迭代到树底。  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;是否必需:	Yes  
+&emsp;&emsp;实例:	step take data  
+
+4.6step choose firstn {num} type {bucket-type}
+
+&emsp;&emsp;描述:	选取指定类型桶的数量，这个数字通常是存储池的副本数（即 pool size ）。  
+&emsp;&emsp;&emsp;&emsp;如果 {num} == 0 选择 pool-num-replicas 个桶（所有可用的）；  
+&emsp;&emsp;&emsp;&emsp;如果 {num} > 0 && < pool-num-replicas 就选择那么多的桶；  
+&emsp;&emsp;&emsp;&emsp;如果 {num} < 0 它意为 pool-num-replicas - {num} 。  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;先决条件:跟在 step take 或 step choose 之后。  
+&emsp;&emsp;实例:	step choose firstn 1 type row
+
+4.7step chooseleaf firstn {num} type {bucket-type}
+
+&emsp;&emsp;描述:	选择 {bucket-type} 类型的一堆桶，并从各桶的子树里选择一个叶子节点。集合内桶的数量通常是存储池的副本数（即 pool size ）。  
+&emsp;&emsp;&emsp;&emsp;如果 {num} == 0 选择 pool-num-replicas 个桶（所有可用的）；  
+&emsp;&emsp;&emsp;&emsp;如果 {num} > 0 && < pool-num-replicas 就选择那么多的桶；  
+&emsp;&emsp;&emsp;&emsp;如果 {num} < 0 它意为 pool-num-replicas - {num} 。  
+&emsp;&emsp;目的:	规则掩码的一个组件。 它的使用避免了通过两步来选择一设备。  
+&emsp;&emsp;先决条件:	Follows step take or step choose.  
+&emsp;&emsp;实例:	step chooseleaf firstn 0 type row
+
+4.8step emit
+
+
+&emsp;&emsp;描述:	输出当前值并清空堆栈。通常用于规则末尾，也适用于相同规则应用到不同树的情况。  
+&emsp;&emsp;目的:	规则掩码的一个组件。  
+&emsp;&emsp;先决条件:	Follows step choose.  
+&emsp;&emsp;实例:	step emit  
+
+较新版本的 CRUSH （从 0.48 起）为了解决一些遗留值导致几个不当行为，在最前面加入了一些参数值。
+
+CRUSH 图内容：
+
+```
+# begin crush map
+tunable choose_local_tries 0 #本地重试次数。以前是 2 ，最优值是 0 。
+tunable choose_local_fallback_tries 0 #以前 5 ，现在是 0
+tunable choose_total_tries 50 #选择一个条目的最大尝试次数。以前 19 ，后来的测试表明，对典型的集群来说 50 更合适。最相当大的集群来说，更大的值也许必要。
+tunable chooseleaf_descend_once 1 #是否重递归叶子选择，或只试一次、并允许最初归置组重试。以前默认 0 ，最优为 1 。
+tunable straw_calc_version 1
+
+# devices
+device 0 osd.0
+device 1 osd.1
+device 2 osd.2
+
+# types
+type 0 osd
+type 1 host
+type 2 chassis
+type 3 rack
+type 4 row
+type 5 pdu
+type 6 pod
+type 7 room
+type 8 datacenter
+type 9 region
+type 10 root
+
+# buckets
+host server-250 {
+        id -2           # do not change unnecessarily
+        # weight 2.160
+        alg straw
+        hash 0  # rjenkins1
+        item osd.0 weight 0.720
+        item osd.1 weight 0.720
+        item osd.2 weight 0.720
+}
+root default {
+        id -1           # do not change unnecessarily
+        # weight 2.160
+        alg straw
+        hash 0  # rjenkins1
+        item server-250 weight 2.160
+}
+
+# rules
+rule replicated_ruleset {
+        ruleset 0
+        type replicated
+        min_size 1
+        max_size 10
+        step take default
+        step chooseleaf firstn 0 type osd
+        step emit
+}
+
+# end crush map
+```
+
 
 ## 部署ceph all-in-one遇到的问题
 在测试环境中，我用openstack/puppet-ceph 部署的ceph all-in-one遇到了问题：
