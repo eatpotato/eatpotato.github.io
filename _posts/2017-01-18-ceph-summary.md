@@ -942,9 +942,4 @@ ceph osd setcrushmap -i newcrushmap
 
 6.重启mon和osd服务
 
-```
-```
-
-```
-```
 
