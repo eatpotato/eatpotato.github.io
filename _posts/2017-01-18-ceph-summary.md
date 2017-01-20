@@ -548,7 +548,7 @@ ceph-disk activate-all
 
 activate-all 靠 /dev/disk/by-parttype-uuid/$typeuuid.$uuid 发现所有分区
 
-![](ceph-parttypeuuid.png)
+![](/img/ceph/ceph-parttypeuuid.png)
 
 parttype-uuid 是在执行activate-prepare 时生成的。通过parttypeuuid，在本机插拔盘完全不会导致故障。
 
