@@ -10,7 +10,7 @@ tags:
 
 ## ceph简介
 
-Ceph是一个分布式存储系统，诞生于2004年，最早致力于开发下一代高性能分布式文件系统的项目。随着云计算的发展，ceph乘上了OpenStack的春风，进而成为了开源社区受关注较高的项目之一。
+Ceph是一个分布式存储系统，诞生于2004年，是最早致力于开发下一代高性能分布式文件系统的项目。随着云计算的发展，ceph乘上了OpenStack的春风，进而成为了开源社区受关注较高的项目之一。
 
 
 ### ceph基本结构
@@ -268,7 +268,6 @@ monmaptool --create --add test-ceph-1 10.0.86.23 --fsid {UUID} /tmp/monmap
 2.10在监视器主机上分别创建数据目录。
 
 ```
-
 mkdir /var/lib/ceph/mon/ceph-test-ceph-1
 ```
 
@@ -315,6 +314,7 @@ service ceph start mon.test-ceph-1
 
 3.osd节点部署
 注意：如果osd盘不是本地目录，那么请忽略3.1-3.3，直接执行3.4即可。
+
 3.1创建本地目录当做osd盘  
 在 test-ceph-2 上执行：
 
@@ -391,7 +391,8 @@ ceph-osd -i {osd-num} --mkfs --mkkey
 ```
 
 3.6注册此 OSD 的密钥  
-在test-ceph-2、test-ceph-3上执行：  
+在test-ceph-2、test-ceph-3上执行：
+  
 ```
 ceph auth add osd.{osd-num} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/{cluster-name}-{osd-num}/keyring
 
@@ -420,13 +421,13 @@ ceph osd crush move test-ceph-2 root=default
 在 test-ceph-3 上执行：
 
 ```
-ceph osd crush move test-ceph-2 root=default
+ceph osd crush move test-ceph-3 root=default
 ```
 
 3.9.分配权重、重新编译、注入集群
 
 在 test-ceph-2 上执行:  
-1.0表示权重，需要根据磁盘大小自行调整权重  
+下面的1.0表示权重，需要根据磁盘大小自行调整权重  
 
 ```
 ceph osd crush add osd.0 1.0 host=test-ceph-2
@@ -525,13 +526,33 @@ ceph::profile::params::osds:
     journal: ''
 ```
 
-puppet会执行 ceph-disk prepare /dev/sdc ，如果journal为空，它会把自动把这块盘分成两个分区,一个为ceph data ,一个为ceph journal  journal分区大小默认为5G，剩下的都分给ceph data.
+puppet会执行 ceph-disk prepare /dev/sdc ，如果journal为空，它会把自动把这块盘分成两个分区,一个为ceph data ,一个为ceph journal。journal分区大小默认为5G，剩下的都分给ceph data.
 
-Journal的作用类似于mysql innodb引擎中的事物日志系统。当有突发的大量写入操作时，ceph可以先把一些零散的，随机的IO请求保存到缓存中进行合并，然后再统一向内核发起IO请求。journal的io是非常密集的,很大程度上也损耗了硬件的io性能，所以通常在生产环境中，使用ssd来单独存储journal文件以提高ceph读写性能。
+Journal的作用类似于mysql innodb引擎中的事物日志系统。当有突发的大量写入操作时，ceph可以先把一些零散的，随机的IO请求保存到缓存中进行合并，然后再统一向内核发起IO请求。journal的io是非常密集的,很大程度上也损耗了硬件的io性能，所以通常在生产环境中，推荐使用ssd来单独存储journal文件以提高ceph读写性能。
 
 journal也可以使用单独的数据盘，只需要在hieradata中传递相应的设备名即可。
 
-openstack/puppet-ceph 传osds参数不支持wwn的方式,因为ceph-disk当前不支持使用wwn来作为磁盘标识的输入参数
+openstack/puppet-ceph 传osds参数不支持wwn的方式,因为ceph-disk当前不支持使用wwn来作为磁盘标识的输入参数。
+
+如果重启了mon节点，需要执行：
+
+```
+service ceph start mon.server-250
+```
+
+如果重启了osd节点，需要执行：
+
+```
+ceph-disk activate-all
+```
+
+activate-all 靠 /dev/disk/by-parttype-uuid/$typeuuid.$uuid 发现所有分区
+
+![](ceph-parttypeuuid.png)
+
+parttype-uuid 是在执行activate-prepare 时生成的。通过parttypeuuid，在本机插拔盘完全不会导致故障。
+
+
 
 ## puppet执行过程分析
 创建mon的大致过程如下：
@@ -828,7 +849,7 @@ ceph osd pool get test-pool size
 
 ```
 [root@test-ceph-1 ~]# ceph mon stat
-e1: 1 mons at {test-ceph-xue-1=30.20.10.9:6789/0}, election epoch 2, quorum 0 test-ceph-xue-1
+e1: 1 mons at {test-ceph-1=30.20.10.9:6789/0}, election epoch 2, quorum 0 test-ceph-1
 ```
 
 2.格式化输出mon map信息
@@ -895,7 +916,7 @@ ceph osd out {osd-number}
 ## CRUSH 图
 CRUSH算法通过计算数据存储位置来确定如何存储和检索。 CRUSH 授权 Ceph 客户端直接连接 OSD ，而非通过一个中央服务器或经纪人。数据存储、检索算法的使用，使 Ceph 避免了单点故障、性能瓶颈、和伸缩的物理限制。
 
-CRUSH图包含 OSD 列表、把设备汇聚为物理位置的“桶”列表、和指示 CRUSH 如何复制存储池里的数据的规则列表。
+CRUSH图包含 OSD 列表、把设备汇聚为物理位置的“桶”列表和指示 CRUSH 如何复制存储池里的数据的规则列表。
 
 
 CRUSH图主要有 4 个主要段落：  
@@ -936,6 +957,8 @@ type 10 root
         item [item-name] weight [weight]
 }  
 ```
+
+Ceph 支持四种桶，每种都是性能和组织简易间的折衷。如果你不确定用哪种桶，我们建议 straw 。关于桶类型的详细讨论: [桶类型](http://docs.ceph.org.cn/rados/operations/crush-map)
 
 各个桶都用了一种哈希算法，当前 Ceph 仅支持 rjenkins1 ，输入 0 表示哈希算法设置为 rjenkins1 。
 
@@ -1029,19 +1052,10 @@ rule <rulename> {
 &emsp;&emsp;描述:	选取桶名并迭代到树底。  
 &emsp;&emsp;目的:	规则掩码的一个组件。  
 &emsp;&emsp;是否必需:	Yes  
-&emsp;&emsp;实例:	step take data  
+&emsp;&emsp;实例:	step take default  
 
-4.6step choose firstn {num} type {bucket-type}
 
-&emsp;&emsp;描述:	选取指定类型桶的数量，这个数字通常是存储池的副本数（即 pool size ）。  
-&emsp;&emsp;&emsp;&emsp;如果 {num} == 0 选择 pool-num-replicas 个桶（所有可用的）；  
-&emsp;&emsp;&emsp;&emsp;如果 {num} > 0 && < pool-num-replicas 就选择那么多的桶；  
-&emsp;&emsp;&emsp;&emsp;如果 {num} < 0 它意为 pool-num-replicas - {num} 。  
-&emsp;&emsp;目的:	规则掩码的一个组件。  
-&emsp;&emsp;先决条件:跟在 step take 或 step choose 之后。  
-&emsp;&emsp;实例:	step choose firstn 1 type row
-
-4.7step chooseleaf firstn {num} type {bucket-type}
+4.6step chooseleaf firstn {num} type {bucket-type}
 
 &emsp;&emsp;描述:	选择 {bucket-type} 类型的一堆桶，并从各桶的子树里选择一个叶子节点。集合内桶的数量通常是存储池的副本数（即 pool size ）。  
 &emsp;&emsp;&emsp;&emsp;如果 {num} == 0 选择 pool-num-replicas 个桶（所有可用的）；  
@@ -1051,7 +1065,7 @@ rule <rulename> {
 &emsp;&emsp;先决条件:	Follows step take or step choose.  
 &emsp;&emsp;实例:	step chooseleaf firstn 0 type row
 
-4.8step emit
+4.7step emit
 
 
 &emsp;&emsp;描述:	输出当前值并清空堆栈。通常用于规则末尾，也适用于相同规则应用到不同树的情况。  
