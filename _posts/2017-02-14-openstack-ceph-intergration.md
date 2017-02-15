@@ -13,6 +13,8 @@ tags:
 
 说明：在进行openstack与ceph集成之前，请保证已有一套openstack环境和ceph环境，为了便于演示，本次openstack采用all-in-one环境，主机名为：server-31,部署的openstack版本为mitaka。
 
+openstack all-in-one搭建请阅读:[openstack-all-in-one30分钟快速搭建](http://eatpotato.github.io/2016/11/15/openstack-all-in-one/)  
+ceph集群搭建请阅读: [ceph总结](http://eatpotato.github.io/2017/01/18/ceph-summary/)
 
 ### 配置openstack为ceph客户端
 
@@ -368,3 +370,206 @@ root@server-31 ~]# glance image-create --name "cirros_raw_image" --file cirros-0
 | 6c26ba25-c032-4170-a12b-53531b3340ac | vm_on_ceph | ACTIVE | -          | Running     | public=172.24.5.12 |
 +--------------------------------------+------------+--------+------------+-------------+--------------------+
 ```
+
+## puppet中的配置项
+
+下面会介绍如果openstack使用puppet搭建，那么为了集成ceph，需要修改哪些配置项信息
+
+### puppet-glance
+
+转发层的部分代码如下：
+
+```
+  case $backend {
+    # 如果后端存储为本地文件
+    'file': {
+      include ::glance::backend::file
+      $backend_store = ['file']
+    }
+    # 如果后端存储使用ceph
+    'rbd': {
+      class { '::glance::backend::rbd':
+        rbd_store_user => 'openstack',
+        rbd_store_pool => 'glance',
+      }
+      $backend_store = ['rbd']
+      # make sure ceph pool exists before running Glance API
+      Exec['create-glance'] -> Service['glance-api']
+    }
+    # 如果后端存储使用swift
+    'swift': {
+      Service<| tag == 'swift-service' |> -> Service['glance-api']
+      $backend_store = ['swift']
+      class { '::glance::backend::swift':
+        swift_store_user                    => 'services:glance',
+        swift_store_key                     => 'a_big_secret',
+        swift_store_create_container_on_put => 'True',
+        swift_store_auth_address            => "${::openstack_integration::config::proto}://127.0.0.1:5000/v2.0",
+      }
+    }
+    default: {
+      fail("Unsupported backend (${backend})")
+    }
+  }
+```
+
+下面仅贴出glance/backend/rbd.pp的相关内容：
+
+```
+  glance_api_config {
+    'glance_store/rbd_store_ceph_conf':    value => $rbd_store_ceph_conf;
+    'glance_store/rbd_store_user':         value => $rbd_store_user;
+    'glance_store/rbd_store_pool':         value => $rbd_store_pool;
+    'glance_store/rbd_store_chunk_size':   value => $rbd_store_chunk_size;
+    'glance_store/rados_connect_timeout':  value => $rados_connect_timeout;
+  }
+...
+  glance_api_config { 'glance_store/default_store': value => 'rbd'; }
+...
+  package { 'python-ceph':
+    ensure => $package_ensure,
+    name   => $::glance::params::pyceph_package_name,
+  }
+```
+
+
+### puppet-cinder
+
+转发层的部分代码如下：
+
+```
+  case $backend {
+    'iscsi': {
+      class { '::cinder::setup_test_volume':
+        size => '15G',
+      }
+      cinder::backend::iscsi { 'BACKEND_1':
+        iscsi_ip_address => '127.0.0.1',
+      }
+    }
+    'rbd': {
+      cinder::backend::rbd { 'BACKEND_1':
+        rbd_user        => 'openstack',
+        rbd_pool        => 'cinder',
+        rbd_secret_uuid => '7200aea0-2ddd-4a32-aa2a-d49f66ab554c',
+      }
+      # make sure ceph pool exists before running Cinder API & Volume
+      Exec['create-cinder'] -> Service['cinder-api']
+      Exec['create-cinder'] -> Service['cinder-volume']
+    }
+    default: {
+      fail("Unsupported backend (${backend})")
+    }
+  }
+  class { '::cinder::backends':
+    enabled_backends => ['BACKEND_1'],
+  }
+  cinder_type { 'BACKEND_1':
+    ensure     => present,
+    properties => ['volume_backend_name=BACKEND_1'],
+  }
+```
+
+下面仅贴出cinder/backend/rbd.pp的相关内容：
+
+```
+  cinder_config {
+    "${name}/volume_backend_name":              value => $volume_backend_name;
+    "${name}/volume_driver":                    value => 'cinder.volume.drivers.rbd.RBDDriver';
+    "${name}/rbd_ceph_conf":                    value => $rbd_ceph_conf;
+    "${name}/rbd_user":                         value => $rbd_user;
+    "${name}/rbd_pool":                         value => $rbd_pool;
+    "${name}/rbd_max_clone_depth":              value => $rbd_max_clone_depth;
+    "${name}/rbd_flatten_volume_from_snapshot": value => $rbd_flatten_volume_from_snapshot;
+    "${name}/rbd_secret_uuid":                  value => $rbd_secret_uuid;
+    "${name}/rados_connect_timeout":            value => $rados_connect_timeout;
+    "${name}/rados_connection_interval":        value => $rados_connection_interval;
+    "${name}/rados_connection_retries":         value => $rados_connection_retries;
+    "${name}/rbd_store_chunk_size":             value => $rbd_store_chunk_size;
+  }
+  ...
+  if $backend_host {
+    cinder_config {
+      "${name}/backend_host": value => $backend_host;
+    }
+  } else {
+    cinder_config {
+      "${name}/backend_host": value => "rbd:${rbd_pool}";
+    }
+  }
+```
+
+### puppet-nova
+
+转发层的部分代码如下：
+
+```
+if $libvirt_rbd {
+    class { '::nova::compute::rbd':
+      libvirt_rbd_user        => 'openstack',
+      libvirt_rbd_secret_uuid => '7200aea0-2ddd-4a32-aa2a-d49f66ab554c',
+      libvirt_rbd_secret_key  => 'AQD7kyJQQGoOBhAAqrPAqSopSwPrrfMMomzVdw==',
+      libvirt_images_rbd_pool => 'nova',
+      rbd_keyring             => 'client.openstack',
+      # ceph packaging is already managed by puppet-ceph
+      manage_ceph_client      => false,
+    }
+    # make sure ceph pool exists before running nova-compute
+    Exec['create-nova'] -> Service['nova-compute']
+  }
+```
+
+下面仅贴出nova/compute/rbd.pp的相关内容：
+
+```
+nova_config {
+    'libvirt/rbd_user': value => $libvirt_rbd_user;
+  }
+
+  if $libvirt_rbd_secret_uuid {
+    nova_config {
+      'libvirt/rbd_secret_uuid': value => $libvirt_rbd_secret_uuid;
+    }
+
+    file { '/etc/nova/secret.xml':
+      content => template('nova/secret.xml-compute.erb'),
+      require => Anchor['nova::config::begin'],
+    }
+
+    exec { 'get-or-set virsh secret':
+      command => '/usr/bin/virsh secret-define --file /etc/nova/secret.xml | /usr/bin/awk \'{print $2}\' | sed \'/^$/d\' > /etc/nova/virsh.secret',
+      unless  => "/usr/bin/virsh secret-list | grep ${libvirt_rbd_secret_uuid}",
+      require => [File['/etc/nova/secret.xml'], Service['libvirt']],
+    }
+
+    if $libvirt_rbd_secret_key {
+      $libvirt_key = $libvirt_rbd_secret_key
+    } else {
+      $libvirt_key = "$(ceph auth get-key ${rbd_keyring})"
+    }
+    exec { 'set-secret-value virsh':
+      command => "/usr/bin/virsh secret-set-value --secret ${libvirt_rbd_secret_uuid} --base64 ${libvirt_key}",
+      unless  => "/usr/bin/virsh secret-get-value ${libvirt_rbd_secret_uuid} | grep ${libvirt_key}",
+      require => Exec['get-or-set virsh secret'],
+      before  => Anchor['nova::config::end'],
+      }
+  }
+
+  if $ephemeral_storage {
+    nova_config {
+      'libvirt/images_type':          value => 'rbd';
+      'libvirt/images_rbd_pool':      value => $libvirt_images_rbd_pool;
+      'libvirt/images_rbd_ceph_conf': value => $libvirt_images_rbd_ceph_conf;
+    }
+  } else {
+    nova_config {
+      'libvirt/images_rbd_pool':      ensure => absent;
+      'libvirt/images_rbd_ceph_conf': ensure => absent;
+    }
+  }
+```
+
+可以看到上面的内容除了修改/etc/nova/nova.conf配置项意以外，还给libvirt设置了密钥，这些内容我们在上面的也有讲到具体的实现过程。
+
+## 参考：
+[Ceph Cookbook](http://product.dangdang.com/24001633.html)
