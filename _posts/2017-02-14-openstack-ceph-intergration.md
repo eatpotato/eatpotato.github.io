@@ -127,6 +127,17 @@ rbd_store_user = openstack
 rbd_store_ceph_conf = /etc/ceph/ceph.conf
 ```
 
+参数说明如下：
+
+| 配置项 | 含义 | 默认值 |
+| --- | --- | --- |
+| rbd_pool | 保存rbd卷的ceph pool名称 | rbd |
+| rbd_user | 访问 RBD 的用户的 ID，仅仅在使用 cephx 认证时使用 | none |
+| rbd_ceph_conf | Ceph 配置文件的完整路径 | ''，表示使用 librados 的默认ceph 配置文件 |
+| rbd_secret_uuid | rbd secret uuid ||
+| rbd_store_chunk_size | 每个 RBD 卷实际上就是由多个对象组成的，因此用户可以指定一个对象的大小来决定对象的数量，默认是 8 MB | 8 |
+
+
 2.重启Openstack Glance服务：
 
 ```
@@ -186,6 +197,18 @@ backend_host=rbd:cinder
 rbd_store_chunk_size=4
 ```
 
+参数说明如下：
+
+| 配置项 | 含义 | 默认值 |
+| --- | --- | --- |
+| rbd_pool | 保存rbd卷的ceph pool名称 | rbd |
+| rbd_user | 访问 RBD 的用户的 ID，仅仅在使用 cephx 认证时使用 | none |
+| rbd_ceph_conf | Ceph 配置文件的完整路径 | ''，表示使用 librados 的默认ceph 配置文件 |
+| rbd_secret_uuid | rbd secret uuid ||
+| rbd_store_chunk_size | 每个 RBD 卷实际上就是由多个对象组成的，因此用户可以指定一个对象的大小来决定对象的数量，默认是 8 MB | 8 |
+
+
+
 2.重启Openstack Cinder服务
 
 ```
@@ -244,6 +267,16 @@ images_rbd_ceph_conf =/etc/ceph/ceph.conf
 rbd_user=openstack
 rbd_secret_uuid=7200aea0-2ddd-4a32-aa2a-d49f66ab554c
 ```
+
+| 配置项 | 含义 | 默认值 |
+| --- | --- | --- |
+| images_type | 其值可以设为下面几个选项中的一个：raw、qcow2、lvm、rbd、default | default |
+| images_rbd_pool | 存放 vm 镜像文件的 RBD pool | rbd |
+| images_rbd_ceph_conf | Ceph 配置文件的完整路径 | ''|
+| rbd_user | rbd user id，仅仅在使用 cephx 认证时使用 | none |
+| rbd_secret_uuid | rbd secret uuid ||
+
+
 
 2.重启Openstack Nova服务:
 
