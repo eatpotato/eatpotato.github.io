@@ -71,13 +71,20 @@ ceph -s --name client.openstack
 
 说明：这一步骤的前提是你的ceph使用了cephx认证
 
-7.1）生成uuid
+
+7.1）创建临时的openstack.key,用于后面的Cinder和Nova配置
+
+```
+ceph auth get-key client.openstack | tee /etc/ceph/client.openstack.key
+```
+
+7.2）生成uuid
 
 ```
 uuidgen
 ```
 
-7.2) 创建密钥文件,并将uuid设置给它
+7.3) 创建密钥文件,并将uuid设置给它
 
 ```
 cat > /etc/nova/secret.xml << EOF
@@ -90,25 +97,30 @@ cat > /etc/nova/secret.xml << EOF
 EOF
 ```
 
-7.3) 定义（define）密钥文件
+7.4) 定义（define）密钥文件
 
 ```
 virsh secret-define --file /etc/nova/secret.xml
 ```
 
-7.4) 在virsh里设置好我们最后一步生成的保密字符串值
+7.5) 在virsh里设置好我们最后一步生成的保密字符串值
 
 ```
-virsh secret-set-value --secret 7200aea0-2ddd-4a32-aa2a-d49f66ab554c --base64
+virsh secret-set-value --secret 7200aea0-2ddd-4a32-aa2a-d49f66ab554c --base64 $(cat /etc/ceph/client.openstack.key)
 ```
 
-7.5) 验证
+7.6) 验证
 
 ```
 virsh secret-list
 ```
 
 ![](/img/openstack-ceph/virsh-list.png)
+
+
+7.7) 删除临时的密钥副本
+
+rm -f /etc/ceph/client.openstack.key
 
 ### 配置ceph作为glance后端存储
 
