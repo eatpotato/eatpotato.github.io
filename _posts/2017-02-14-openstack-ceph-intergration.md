@@ -120,7 +120,9 @@ virsh secret-list
 
 7.7) 删除临时的密钥副本
 
+```
 rm -f /etc/ceph/client.openstack.key
+```
 
 ### 配置ceph作为glance后端存储
 
