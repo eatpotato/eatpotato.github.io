@@ -31,3 +31,4 @@ for service in `systemctl list-units | grep -P "(openstack)|(neutron)"| sed 's/�
 done
 ```
 
+未完待续
