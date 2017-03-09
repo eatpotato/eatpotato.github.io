@@ -31,4 +31,43 @@ for service in `systemctl list-units | grep -P "(openstack)|(neutron)"| sed 's/�
 done
 ```
 
+## Glance服务重启
+
+```
+service openstack-glance-registry restart
+
+service openstack-glance-registry status
+
+service openstack-glance-api restart
+
+service openstack-glance-api status
+```
+
+## 创建private网络和路由器
+
+```
+  neutron net-create test
+  neutron subnet-create --name test --gateway 192.168.1.1 test 192.168.1.0/24
+  neutron router-create router
+  neutron router-interface-add router test
+  neutron router-gateway-set router public
+```
+
+## 创建安全组
+
+```
+nova secgroup-add-rule default tcp 22 22 0.0.0.0/0
+
+nova secgroup-add-rule default tcp 80 80 0.0.0.0/0
+
+nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0
+```
+
+## 创建虚拟机
+
+```
+openstack server create --flavor m1.large --image $IMAGE_NAME --nic net-id=$NET_ID --security-group default $HOST_NAME
+
+```
+
 未完待续
