@@ -84,7 +84,9 @@ VPID（Virtual-Processor Identifiers，虚拟处理器标识）。是对现在�
 
 ## 三、CentOS上安装KVM功能模块步骤
 
-### 3.1 KVM 需要有 CPU 的支持（Intel VT 或 AMD SVM），在安装 KVM 之前检查一下 CPU 是否提供了虚拟技术的支持。
+### 3.1 KVM 
+
+需要有 CPU 的支持（Intel VT 或 AMD SVM），在安装 KVM 之前检查一下 CPU 是否提供了虚拟技术的支持。
 
 * 基于 Intel 处理器的系统，运行grep vmx /proc/cpuinfo查找 CPU flags 是否包括 vmx 关键词
 * 基于 AMD 处理器的系统，运行grep svm /proc/cpuinfo查找 CPU flags 是否包括 svm 关键词
@@ -339,6 +341,8 @@ KVM默认采用nat模式，用户网络（User Networking）：让虚拟机访�
 Bridge方式即虚拟网桥的网络连接方式，是客户机和子网里面的机器能够互相通信。可以使虚拟机成为网络中具有独立IP的主机。
 
 桥接网络（也叫物理设备共享）被用作把一个物理设备复制到一台虚拟机。网桥多用作高级设置，特别是主机多个网络接口的情况。
+
+![](/img/kvm/kvm-bridge.png)
 
 配置步骤见3.3小节
 
