@@ -32,7 +32,7 @@ Linux 变成了一个 Hypervisor：
 
 ### 1.2 KVM原理
 
-KVM 本身不执行任何模拟，需要用户空间应用程序 QEMU 通过 /dev/kvm 接口设置一个客户机虚拟服务器的地址空间，向它提供模拟的 I/O，KVM 模块实现处理器的虚拟化和内存虚拟化。在硬件虚拟化技术的支持下，内核的 KVM 模块与 QEMU 的设备模拟协同工作，构成一套和物理计算机系统完全一致的虚拟化计算机软硬件系统。
+KVM 本身不执行任何模拟，需要用户空间应用程序 QEMU 通过 /dev/kvm 接口设置一个客户机虚拟服务器的地址空间，向它提供模拟的 I/O，KVM 模块主要功能是初始化CPU硬件，打开虚拟化模式，然后将虚客户机运行在虚拟机模式下，并对虚拟客户机的运行提供一定的支持。在硬件虚拟化技术的支持下，内核的 KVM 模块与 QEMU 的设备模拟协同工作，构成一套和物理计算机系统完全一致的虚拟化计算机软硬件系统。
 
 ![](/img/kvm/kvm-principle.png)
 
@@ -82,7 +82,7 @@ VPID（Virtual-Processor Identifiers，虚拟处理器标识）。是对现在�
 
  
 
-## 三、CentOS上安装KVM功能模块步骤
+## 三、CentOS上安装Kvm步骤
 
 ### 3.1 KVM 
 
@@ -93,6 +93,7 @@ VPID（Virtual-Processor Identifiers，虚拟处理器标识）。是对现在�
 * 检查BIOS，确保BIOS里开启VT选项
 
 ### 3.2 安装KVM所需组件
+除了3.1的KVM内核模块外，在用户空间需要QEMU来模拟CPU和设备模型以及用于启动客户机进程，这样才有一个完整的KVM运行环境。而qemu-kvm是为了针对KVM专门做了修改和优化的QEMU分支。
 
 ```
 yum install seabios  qemu-kvm virt-manager libvirt -y
@@ -106,6 +107,27 @@ systemctl start libvirtd
 
 
 ### 3.3 创建并启动bridge设备
+
+安装需要的RPM包
+
+```
+yum install -y bridge-utils tuned
+```
+
+查看tun模块是否加载：
+
+```
+[root@server-31 ~]# lsmod | grep tun
+tun                    27141  12 vhost_net
+```
+
+检查/dev/net/tun的权限，需要让当前用户拥有可读写的权限
+
+```
+[root@server-31 ~]# ll /dev/net/tun
+crw-rw-rw- 1 root root 10, 200 Mar 10 08:33 /dev/net/tun
+```
+
 创建/etc/sysconfig/network-scripts/ifcfg-br0
 
 ```
@@ -336,7 +358,7 @@ KVM默认采用nat模式，用户网络（User Networking）：让虚拟机访�
 
 ### 4.2 bridge
 
-虚拟网桥（Virtual Bridge）：设置好后客户机与互联网，客户机与主机之间都可以通信，试用于需要多个公网IP的环境。
+网桥（bridge）模式可以让客户机和宿主机共享一个物理网络设备连接网络，客户机有自己的独立IP地址，可以直接连接与宿主机一模一样的网络，客户机可以访问外部网络，外部网络也可以直接访问客户机。
 
 Bridge方式即虚拟网桥的网络连接方式，是客户机和子网里面的机器能够互相通信。可以使虚拟机成为网络中具有独立IP的主机。
 
@@ -350,6 +372,7 @@ Bridge方式即虚拟网桥的网络连接方式，是客户机和子网里面�
 网络配置可以同时存在nat和Bridge.
 
 ## 五、QEMU
+Qemu本身并不是KVM的一部分，其自身就是一个著名的开源虚拟机软件。与KVM不同，QEMU虚拟机是一个纯软件的实现，所以性能低下。但是，其优点是在支持QEMU本身编译运行的平台上就可以实现虚拟机的功能。
 
 ### 5.1 qemu-img
 
@@ -381,6 +404,98 @@ qemu-img convert -f raw -O qcow2 test.raw test.qcow2
 # -O output_fmt
 
 ```
+
+## 六、KVM管理工具
+### 6.1 libvirt
+
+libvirt 是为了更方便地管理平台虚拟化技术而设计的开放源代码的应用程序接口、守护进程和管理工具，他不仅提供了对虚拟化客户机的管理，也提供了对虚拟化网络和存储的管理。
+
+libvirt中涉及几个重要的概念，解释如下：
+
+1. 节点（Node）：一个物理机器，上面可能运行着多个虚拟客户机。Hypervisor和Domain都运行在Node之上。
+
+2. Hypervisor：也称虚拟机监控器（VMM），如KVM、Xen、VMware、Hyper-V等，是虚拟化中的一个底层软件层，它可以虚拟化一个节点让其运行多个虚拟客户机（不同客户机可能有不同的配置和操作系统）。
+
+3. 域（Domain）：是在Hypervisor上运行的一个客户机操作系统实例。域也被称为实例（instance，如亚马逊的AWS云计算服务中客户机就被称为实例）、客户机操作系统（guest OS）、虚拟机（virtual machine），它们都是指同一个概念。
+
+**libvirt安装**
+
+```
+yum install -y libvirt
+systemctl start libvirtd
+```
+
+**libvirt使用**
+
+在使用libvirt对虚拟化系统进行管理师，很多地方都是XML文件作为配置文件。
+前面的new_centos7.2.xml配置文件中，关于CPU的配置为：
+
+```
+<vcpu>2</vcpu>
+```
+
+关于内存的配置为：
+
+```
+<memory>16097152</memory>
+<currentMemory>16097152</currentMemory>
+```
+memory标签中的值表示客户机最大可使用的内存，为：16097152KB（即16GB）
+currentMemory标签中的值表示启动时及分配给客户机使用的内存
+
+关于启动顺序的配置
+
+```
+<os>
+	<type arch='x86_64' machine='pc'>hvm</type>
+	<boot dev='hd'/>
+</os>
+```
+
+这样的配置表示客户机的类型是HVM类型（硬件虚拟机），它表示在硬件辅助虚拟化技术的支持下不需要修改客户机操作系统就可以启动客户机。
+boot选项用于设置客户机启动时的设备，hd表示硬盘，cdrom表示光盘
+
+网桥的配置
+
+```
+<devices>
+···
+	<interface type="bridge">
+		<model type="virtio"/>
+		<source bridge="br0"/>
+	</interface>
+</devices>
+```
+
+type='bridge'表示使用桥接方式使客户机获得网络，可以用address来配置客户机中网卡的MAC地址，<model type="virtio"/>表示在客户机中使用virtio-net驱动的网卡设备，<source bridge='br0'> 表示使用宿主机的br0网络接口来建立网桥
+
+如果选用NAT方式的虚拟机网络配置(需要保证宿主机中运行着dhcp和DNS服务器，一般默认使用dnsmasq)，那么在域的XML配置中，配置实例如下：
+
+```
+<devices>
+···
+	<interface type="network">
+		<source netwokr="default"/>
+	</interface>
+</devices>
+```
+
+存储的配置
+
+```
+<devices>
+···
+	<disk type='file' device='disk'>
+	<driver name='qemu' type='qcow2'/>
+	<source file='/var/new_centos7.2.qcow2'/>
+	<target dev='vda' bus='virtio'/>
+	</disk>
+</devices>
+```
+
+上面的配置表示，使用qcow2格式的centos7.2镜像文件作为客户机的磁盘，其在客户机中使用virtio总线，设备名称为/dev/vda
+
+
 
 ## 参考
 [世民谈云计算](http://www.cnblogs.com/sammyliu/p/4543110.html)  
