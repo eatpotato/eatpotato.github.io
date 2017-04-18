@@ -131,6 +131,7 @@ there
 |not in|成员运算符 - 如果字符串中不包含给定的字符返回 True|>>>"M" not in a True|
 
 
+
 ### Python列表
 
 List（列表） 是 Python 中使用最频繁的数据类型。  
@@ -146,13 +147,50 @@ List（列表） 是 Python 中使用最频繁的数据类型。
 list = [ 'runoob', 786 , 2.23, 'john', 70.2 ]
 tinylist = [123, 'john']
  
-print list               # 输出完整列表
-print list[0]            # 输出列表的第一个元素
-print list[1:3]          # 输出第二个至第三个的元素 
-print list[2:]           # 输出从第三个开始至列表末尾的所有元素
-print tinylist * 2       # 输出列表两次
-print list + tinylist    # 打印组合的列表
+print list                           # 输出完整列表
+print list[0]                        # 输出列表的第一个元素
+print list[1:3]                      # 输出第二个至第三个的元素 
+print list[2:]                       # 输出从第三个开始至列表末尾的所有元素
+print tinylist * 2                   # 输出列表两次
+print list + tinylist                # 打印组合的列表
+list[-2] = 'john'                    # 读取列表中倒数第二个元素
+list[1:] = [785, 2,23, 'john', 70.2] # 从第二个元素开始截取列表
 ```
+
+
+Python列表脚本操作符
+
+|pyhton表达式|结果|描述|
+|--|--|--|
+|len([1, 2, 3])|3|长度|
+|[1, 2, 3] + [4, 5, 6]|[1, 2, 3, 4, 5, 6]|组合|
+|['Hi!'] * 4|['Hi!', 'Hi!', 'Hi!', 'Hi!']|重复|
+|3 in [1, 2, 3]|True|元素是否存在于列表中|
+|for x in [1, 2, 3]: print x,|1 2 3|迭代|
+
+python包含以下函数:
+
+|函数|描述|
+|--|--|
+|cmp(list1, list2)|比较两个列表的元素|
+|len(list)|列表元素个数|
+|min(list)|返回列表元素最小值|
+|max(list)|返回列表元素最大值|
+|list(seq)|将元组转换为列表|
+
+列表有以下方法：
+
+|方法|描述|
+|--|--|
+|list.append(obj)|在列表末尾添加新的对象|
+|list.count(obj)|统计某个元素在列表中出现的次数|
+|list.extend(seq)|在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）|
+|list.index(obj)|从列表中找出某个值第一个匹配项的索引位置|
+|list.insert(index, obj)|将对象插入列表|
+|list.pop(obj=list[-1])|移除列表中的一个元素（默认最后一个元素），并且返回该元素的值|
+|list.remove(obj)|移除列表中某个值的第一个匹配项|
+|list.reverse()|反向列表中元素|
+|list.sort([func])|对原列表进行排序|
 
 ### python元组
 
@@ -183,8 +221,34 @@ print tuple + tinytuple   # 打印组合的元组
 tuple = ( 'runoob', 786 , 2.23, 'john', 70.2 )
 list = [ 'runoob', 786 , 2.23, 'john', 70.2 ]
 tuple[2] = 1000    # 元组中是非法应用
-list[2] = 1000     # 列表中是合法应用
+list[2] = 1000     # 列表中是合法应用    
+ ```
+
+创建元组：
+
+``` 
+tup1 = ()          # 创建空元组
+tup2 = (50,)       # 元组中只包含一个元素时，需要在元素后面添加逗号  
 ```
+
+修改元组  
+元组中的元素值是不允许修改的，但我们可以对元组进行连接组合，如下实例:
+
+```
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+tup1 = (12, 34.56);
+tup2 = ('abc', 'xyz');
+
+# 以下修改元组元素操作是非法的。
+# tup1[0] = 100;
+
+# 创建一个新的元组
+tup3 = tup1 + tup2;
+print tup3;
+```
+
 
 ### python字典
 
@@ -211,6 +275,21 @@ print tinydict             # 输出完整的字典
 print tinydict.keys()      # 输出所有键
 print tinydict.values()    # 输出所有值
 ```
+
+Python字典包含了以下内置方法：
+
+|函数|描述|
+|--|--|
+|dict.clear()|删除字典内所有元素|
+|dict.copy()|返回一个字典的浅复制|
+|dict.fromkeys(seq[, val]))|创建一个新字典，以序列 seq 中元素做字典的键，val 为字典所有键对应的初始值|
+|dict.get(key, default=None)|返回指定键的值，如果值不在字典中返回default|
+|dict.has_key(key)|如果键在字典dict里返回true，否则返回false|
+|dict.items()|以列表返回可遍历的(键, 值) 元组数组|
+|dict.keys()|以列表返回一个字典所有的键|
+|dict.setdefault(key, default=None)|和get()类似, 但如果键不存在于字典中，将会添加键并将值设为default|
+|dict.update(dict2)|把字典dict2的键/值对更新到dict里|
+|dict.values()|以列表返回字典中的所有值|
 
 
 ## 循环语句
