@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      nova源码分析
+title:      nova创建虚拟机源码分析
 date:       2017-04-26
 author:     xue
 catalog:    true
@@ -177,7 +177,8 @@ class ComputeTaskAPI(object):
 	    cctxt = self.client.prepare(version=version)
 	    #rpc cast是异步调用，第二个参数是RPC调用的函数名，kw是传递的参数
         cctxt.cast(context, 'build_instances', **kw)
-        '''截至到现在，虽然目录由api->compute->conductor，但仍在nova-api进程中运行，直到cast方法执行，该方法由于是异步调用，因此nova-api不会等待远程方法调用结果，直接返回结束。''''
+        '''截至到现在，虽然目录由api->compute->conductor，但仍在nova-api进程中运行，
+        直到cast方法执行，该方法由于是异步调用，因此nova-api不会等待远程方法调用结果，直接返回结束。''''
 ```
 
 ## 二、nova conductor
@@ -218,7 +219,10 @@ class SchedulerAPI(object):
 class SchedulerManager(manager.Manager):
         @messaging.expected_exceptions(exception.NoValidHost)
     def select_destinations(self, context, request_spec, filter_properties):
-        '''driver其实就是调度算法实现，由配置文件决定，通常用的比较多的就是filter_scheduler，对应filter_scheduler.py模块,该模块首先通过host_manager拿到所有的计算节点信息，然后通过filters过滤掉不满足条件的计算节点，剩下的节点通过weigh方法计算权值，最后选择权值高的作为候选计算节点返回。nova-scheduler进程结束。'''
+        '''driver其实就是调度算法实现，由配置文件决定，通常用的比较多的就是filter_scheduler，
+        对应filter_scheduler.py模块,该模块首先通过host_manager拿到所有的计算节点信息，
+        然后通过filters过滤掉不满足条件的计算节点，剩下的节点通过weigh方法计算权值，
+        最后选择权值高的作为候选计算节点返回。nova-scheduler进程结束。'''
         dests = self.driver.select_destinations(context, request_spec,
             filter_properties)
         return jsonutils.to_primitive(dests)
@@ -263,11 +267,26 @@ class ComputeAPI(object):
 ```
 #nova/compute/manager.py
 class ComputeManager(manager.Manager):
-   def build_and_run_instance(self, context, instance, image, request_spec,
+   #build_and_run_instance会调用_build_and_run_instance，这里其调用过程
+   def _build_and_run_instance(self, context, instance, image, request_spec,
       ...):
       ...
+      image_name = image.get('name')
+      # ==> nova.image.__init__
+             #     ==> nova.image.api.API:get()
+             #         ==> nova.image.api.API:_get_session_and_image_id()
+             #             ==> nova.image.glance:get_remote_image_service()
+             #                 ==> nova.image.glance.GlanceImageService:show()   
+             #                     ==> nova.image.glance._tnslate_from_glanceranslate_from_glance
+             # Return:ClanceImageService.show() 返回一个包含了 Image_Mete 信息的 Dict['name'] == uri_or_id
+      
+      # 向外部发出一个 start to create instance 的通知
+      self._notify_about_instance_usage(context, instance, 'create.start',
+                extra_usage_info={'image_name': image_name})
+      ...
       '''
-      该方法调用了driver的spawn方法，这里的driver就是各种hypervisor的实现，所有实现的driver都在virt目录下，入口为driver.py，比如libvirt driver实现对应为virt/libvirt/driver.py
+      该方法调用了driver的spawn方法，这里的driver就是各种hypervisor的实现，
+      所有实现的driver都在virt目录下，入口为driver.py，比如libvirt driver实现对应为virt/libvirt/driver.py
       '''
       self.driver.spawn(context, instance, image,
                                       injected_files, admin_password,
@@ -280,34 +299,26 @@ class LibvirtDriver(driver.ComputeDriver):
 
    def spawn(self, context, instance, image_meta, injected_files,
               admin_password, network_info=None, block_device_info=None):
-        disk_info = blockinfo.get_disk_info(CONF.libvirt.virt_type,
-                                            instance,
-                                            image_meta,
-                                            block_device_info)
+        ...
+        #创建虚拟机磁盘镜像
         self._create_image(context, instance,
-                           disk_info['mapping'],
-                           network_info=network_info,
-                           block_device_info=block_device_info,
-                           files=injected_files,
-                           admin_pass=admin_password)
+                           ...)
+        #创建虚拟机XML定义文件                   
         xml = self._get_guest_xml(context, instance, network_info,
-                                  disk_info, image_meta,
-                                  block_device_info=block_device_info,
-                                  write_to_disk=True)
+                           ...)
+        #创建虚拟机和虚拟机网络资源
         self._create_domain_and_network(context, xml, instance, network_info,
-                                        disk_info,
-                                        block_device_info=block_device_info)
-        LOG.debug("Instance is running", instance=instance)
-
+                           ...)
+         
         def _wait_for_boot():
             """Called at an interval until the VM is running."""
             state = self.get_info(instance).state
-
+            #检查虚拟机的power_state树形
             if state == power_state.RUNNING:
                 LOG.info(_LI("Instance spawned successfully."),
                          instance=instance)
                 raise loopingcall.LoopingCallDone()
-
+        #调用上面定义的_wait_for_boot,创建定时线程等待虚拟机创建完毕
         timer = loopingcall.FixedIntervalLoopingCall(_wait_for_boot)
         timer.start(interval=0.5).wait()                                     
 ```
