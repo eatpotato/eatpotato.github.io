@@ -313,12 +313,44 @@ class LibvirtDriver(driver.ComputeDriver):
         def _wait_for_boot():
             """Called at an interval until the VM is running."""
             state = self.get_info(instance).state
-            #检查虚拟机的power_state树形
+            #检查虚拟机的power_state属性
             if state == power_state.RUNNING:
                 LOG.info(_LI("Instance spawned successfully."),
                          instance=instance)
                 raise loopingcall.LoopingCallDone()
         #调用上面定义的_wait_for_boot,创建定时线程等待虚拟机创建完毕
         timer = loopingcall.FixedIntervalLoopingCall(_wait_for_boot)
+        #每隔0.5秒检查一下新建虚拟机是否启动
         timer.start(interval=0.5).wait()                                     
 ```
+
+上面的_create_domain_and_network会调用_create_domain去创建虚拟机:
+
+```
+    def _create_domain(self, xml=None, domain=None,
+                       instance=None, launch_flags=0, power_on=True):
+        ...
+        try:
+            if xml:
+                ...
+                #根据xml文件中的配置，定义一个虚拟机，但不启动
+                #返回一个virDomain对象代表这个虚拟机，这个定义是永久性的
+                #可以通过lookupByName找到这个虚拟机
+                domain = self._conn.defineXML(xml)
+
+            if power_on:
+                #启动之前定义的虚拟机，如果成功，此虚拟机就从“已定义”状态的集合移到“正运行”集合
+                domain.createWithFlags(launch_flags)
+
+            if not utils.is_neutron():
+                #XMLDes()获得此虚拟机对应的XML描述，可以用于将来重新启动此虚拟机
+                self._enable_hairpin(domain.XMLDesc(0))
+        except Exception:
+            with excutils.save_and_reraise_exception():
+                if err:
+                    LOG.error(err)
+
+        return domain
+```
+
+
