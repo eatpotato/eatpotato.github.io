@@ -82,10 +82,13 @@ def ComputeTaskAPI(*args, **kwargs):
 
 
 ```
-class LocalAPI(object):     """A local version of the conductor API that does database updates     locally instead of via RPC.     """      def __init__(self):         # 定义了一个ConductorManager对象，它的定义在nova/conductor/manager.py中，
+class LocalAPI(object):     
+        """A local version of the conductor API that does database updates     locally instead of via RPC.     """
+        def __init__(self):         # 定义了一个ConductorManager对象，它的定义在nova/conductor/manager.py中，
         其中定义了许多数据库访问的方法，这些方法都在本机建立与数据库的连接。
         # LocalAPI类定义了许多接口方法供Nova其他服务（如Scheduler服务）调用，
-        而这些方法底层都是直接调用了ConductorManager对象中定义的相应方法,并没有向nova conductor发送RPC请求         self._manager = utils.ExceptionHelper(manager.ConductorManager())
+        而这些方法底层都是直接调用了ConductorManager对象中定义的相应方法,并没有向nova conductor发送RPC请求         
+        self._manager = utils.ExceptionHelper(manager.ConductorManager())
 ```
 
 
@@ -95,6 +98,7 @@ class LocalAPI(object):     """A local version of the conductor API that does 
 class API(object):
     def __init__(self):
     #API对象的初始化方法也很简单，它创建了一个Conductor RPC API对象。
-    Conductor RPC API类中定义了许多接口方法向Nova conductor发送RPC请求。     self._manager = rpcapi.ConductorAPI()
+    Conductor RPC API类中定义了许多接口方法向Nova conductor发送RPC请求。
+    self._manager = rpcapi.ConductorAPI()
 
 ```
