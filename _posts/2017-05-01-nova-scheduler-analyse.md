@@ -101,6 +101,8 @@ class HostManager(object):
         else:
             filters = self._choose_host_filters(filter_class_names)
         ...
+        return self.filter_handler.get_filtered_objects(filters,
+                hosts, filter_properties, index, context=context)
         
     def _choose_host_filters(self, filter_cls_names):
         ...
@@ -175,9 +177,9 @@ class SpecifiedHostFilter(filters.BaseHostFilter):
         requested_host = scheduler_hints.get('requested_host',None)
         #如果客户提供了要求的计算节点，则检查当前计算节点与客户要求的节点是否匹配
         if requested_host:
-        	return requested_host ==host_state.host
+        	return requested_host == host_state.host
         #如果客户没有提供要求的计算节点，则返回真
-        return true
+        return True
 ```
 
 将自定义filter放在nova目录下，形成下面的目录结构:
@@ -200,3 +202,59 @@ scheduler_default_filters=RetryFilter,AvailabilityZoneFilter,RamFilter,ComputeFi
 重启nova-scheduler服务
 
 
+
+## 客户端测试
+
+使用rdo快速搭建openstack-allinone环境，详情见[官网](https://www.rdoproject.org/install/quickstart/)
+
+在specified_host_filter.py中打断点后，停止nova-scheduler服务，手动启动scheduler服务：
+
+```
+/usr/bin/python /usr/bin/nova-scheduler --config-file /etc/nova/nova.conf --logfile /var/log/nova/nova-scheduler.log
+```
+
+
+创建一台虚拟机:
+
+```
+openstack server create --flavor m1.tiny --image cirros --nic net-id=4eace7c7-ec56-4e12-9a05-fc70a0887220 --security-group default ----hint requested_host=no-such-host test
+```
+
+执行到断点处：
+
+```
+(Pdb) l
+  8  	    def __init__(self):
+  9  	        LOG.info("SpecifiedHostFilter is initialized!")
+ 10
+ 11  	    def host_passes(slef, host_state, filter_properties):
+ 12  	        import pdb; pdb.set_trace()
+ 13  ->	        scheduler_hints = filter_properties.get('scheduler_hints',{})
+ 14  	        requested_host = scheduler_hints.get('requested_host',None)
+ 15  	        if requested_host:
+ 16  	        	return requested_host ==host_state.host
+ 17  	        return True
+[EOF]
+Pdb) n
+-> requested_host = scheduler_hints.get('requested_host',None)
+(Pdb) p scheduler_hints
+{u'requested_host': u'no-such-host'}
+(Pdb) n
+-> if requested_host:
+(Pdb) n
+-> return requested_host ==host_state.host
+(Pdb) p requested_host
+u'no-such-host'
+(Pdb) p host_state.host
+u'openstack'
+```
+
+因为我们传的'no-such-host'和可用的主机'openstack'不相等，所以日志中看到这样的消息：
+
+```
+2017-05-02 18:19:42.417 13453 INFO nova.myproject.specified_host_filter [-] SpecifiedHostFilter is initialized!
+2017-05-02 18:21:54.628 13453 INFO nova.filters [req-d120d748-eb65-4b86-a5ed-22673ea76a52 00ce1cf60c3a4df2842437b5c23d35f6 67ee8dfa658e43b2b1a3d8108f624a95 - - -] Filter SpecifiedHostFilter returned 0 hosts
+```
+
+
+如果我们不传--hint参数  或者----hint requested_host=openstack ,虚拟机创建以后状态为Active
