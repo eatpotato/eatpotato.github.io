@@ -39,8 +39,11 @@ nova的各个服务之间的通信都使用了基于AMQP实现的RPC机制，其
 
 class ComputeAPI(object):
 
-    #定义了非常多的方法，每个方法里都有下面两行     cctxt = self.client.prepare(server=host, version=version)       #获得目标主机的RPC client
-    #rpc cast是异步调用，第二个参数是RPC调用的函数名，后面的参数根据方法不同而不同     cctxt.cast(ctxt, 'live_migration', instance=instance,                            dest=dest, block_migration=block_migration,                migrate_data=migrate_data, **args)
+    #定义了非常多的方法，每个方法里都有下面两行
+    cctxt = self.client.prepare(server=host, version=version)       #获得目标主机的RPC client
+    #rpc cast是异步调用，第二个参数是RPC调用的函数名，后面的参数根据方法不同而不同     
+    cctxt.cast(ctxt, 'live_migration', instance=instance,
+    dest=dest, block_migration=block_migration, migrate_data=migrate_data, **args)
 
 ```
 
