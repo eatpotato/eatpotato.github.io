@@ -258,3 +258,6 @@ u'openstack'
 
 
 如果我们不传--hint参数  或者----hint requested_host=openstack ,虚拟机创建以后状态为Active
+
+## 参考：
+[JiYou](https://github.com/JiYou/openstack/blob/master/chap18/myproject)
