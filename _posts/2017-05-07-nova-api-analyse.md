@@ -9,7 +9,7 @@ tags:
     - nova
 ---
 
-## wsgi简介
+## 一、wsgi简介
 
 在构建 Web 应用时，通常会有 Web Server 和 Application Server 两种角色。其中 Web Server 主要负责接受来自用户的请求，解析 HTTP 协议，并将请求转发给 Application Server，Application Server 主要负责处理用户的请求，并将处理的结果返回给 Web Server，最终 Web Server 将结果返回给用户。
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     server.serve_forever()
 ```
 
-## Paste Deployment简介
+## 二、Paste Deployment简介
 
 paste deployment是一个配置WSGI APP和发现服务的一个系统，对于WSGI APP的开发者，它提供了一个简单的函数(loadapp)，以便从配置文件和python egg中加载一个wsgi app，对于提供的WSGI APP，它只请求一个简单的入口，因此你不需要提供你的app详情给它。
 
@@ -75,7 +75,7 @@ paste deployment是一个配置WSGI APP和发现服务的一个系统，对于WS
 
 配置文件中由多个sections(段)组成，每个sections是由[type:name]这样的格式组成，如果不是这样的格式，将会被忽略
 
-## 解读nova中api-paste.ini
+### 2.1 解读nova中api-paste.ini
 
 /etc/nova/api-paste.ini的部分内容如下： 
 
@@ -169,9 +169,9 @@ paste.filter_factory = keystonemiddleware.auth_token:filter_factory
 
 从上面来看在OpenStack中nova-api的请求流程:依次经过filter[compute_req_id faultwrap sizelimit authtoken keystonecontext ratelimit]，最后到达osapi_compute_app_v2这个app。
 
-## Nova API服务的启动
+## 三、Nova API服务的启动
 
-### WSGI Server
+### 3.1 WSGI Server
 Nova-api(nova/cmd/api.py) 服务启动时，初始化 nova/wsgi.py 中的类 Server，建立了 socket 监听 IP 和端口，再由 eventlet.spawn 和 eventlet.wsgi.server 创建 WSGI server：
 
 ```
@@ -209,7 +209,7 @@ class Server(object):
         
 ```
 
-### Application Side & Middlewar
+### 3.2 Application Side & Middlewar
 nova/wsgi.py的__init__方法中加载了Loader类，Application 的加载就是由它完成的，Loader 的 load_app 方法调用了 paste.deploy.loadapp 加载了 WSGI 的配置文件 /etc/nova/api-paste.ini：
 
 ```
@@ -234,7 +234,7 @@ class Loader(object):
 paste.app_factory = nova.api.openstack.compute:APIRouter.factory
 ```
 
-nova/api/openstack/compute/__init__.py下APIRouter类中的factory方法继承自nova.api.openstack.APIRouter，factory方法创建了一个APIRouter对象，在APIRouter的__init__方法中调用了_setup_routes方法。其方法定义如下：
+nova/api/openstack/compute/\_\_init\_\_.py下APIRouter类中的factory方法继承自nova.api.openstack.APIRouter，factory方法创建了一个APIRouter对象，在APIRouter的\_\_init\_\_方法中调用了_setup_routes方法。其方法定义如下：
 
 ```
 #nova/api/openstack/compute/__init__.py
@@ -257,6 +257,12 @@ class APIRouter(nova.api.openstack.APIRouter):
                             collection={'detail': 'GET'},
                             member={'action': 'POST'})
         ...
+        
+#nova/api/openstack/compute/consoles.py
+def create_resource():
+    #console资源的controller对象是一个wsgi.Resource对象
+    return wsgi.Resource(Controller())
+    
 
 ```
 
@@ -280,29 +286,26 @@ map.connect("servers","/servers/detail",controller=self.resources['servers'],act
 map.connect("server","/server/{id}/action",controller=self.resources['servers'],action="action",conditions=dict(method=["POST"]))
 ```
 
-## 处理HTTP请求的流程
 
 
-```
-#nova/api/openstack/compute/__init__.py
-class APIRouter(nova.api.openstack.APIRouter):
-    def _setup_routes(self, mapper, ext_mgr, init_only):
-        ...
-        if init_only is None or 'consoles' in init_only:
-            self.resources['consoles'] = consoles.create_resource()
-            mapper.resource("console", "consoles",
-                        controller=self.resources['consoles'],
-                        parent_resource=dict(member_name='server',
-                        collection_name='servers'))
+
+## 总结
+
+概括一下nova api的大致启动流程：
+
+1.执行nova/cmd/api.py中main函数,解析参数,设置日志,启动WSGIService  
+2.WSGI的服务启动过程中，主要涉及WSGIService的初始化(init)和启动(start)方法  
+3.init方法会根据/etc/nova/api-paste.ini中的Paste规则，通过wsgiLoader来load_app  
+4.start方法通过 eventlet.spawn 和 eventlet.wsgi.server 创建 WSGI server
 
 
-#nova/api/openstack/compute/consoles.py
-def create_resource():
-    return wsgi.Resource(Controller())
-```
-从上面的代码可以看到，console资源的controller对象是一个wsgi.Resource对象。因此，当客户端发送HTTP请求后，
+wsgi的application端和server端的实现：
 
-APIRouter类继承了nova/wsgi.py中的Router类，__call__方法
+server端通过Eventlet来实现。通过Paste deployment 配置来发现和配置 WSGI server 和 application 。
+
+application端需要实现实现一个factory的类方法,收到HTTP请求时，会调用__call__方法,返回response.
+
+APIRouter根据 http url把请求映射到具体的方法.
 
 
 
