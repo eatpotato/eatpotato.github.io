@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      cinder服务启动源码分析
-date:       2017-05-07
+date:       2017-05-21
 author:     xue
 catalog:    true
 tags:
@@ -152,8 +152,8 @@ class Loader(object):
             raise PasteAppNotFound(name=name, path=self.config_path)
 ```
 
-load_app完成了如下操作:
-1.根据/etc/cinder/api-paste.ini中的Paste规则加载相应的过滤器和app
+load_app完成了如下操作:  
+1.根据/etc/cinder/api-paste.ini中的Paste规则加载相应的过滤器和app  
 2.设置路由映射(Router)
 
 这些具体的过程可以参考我的另一篇博客： [深入理解nova api服务](http://xuefy.cn/2017/05/07/nova-api-analyse/)
