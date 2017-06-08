@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      python学习
+title:      python数据类型
 date:       2017-04-17
 author:     xue
 catalog:    true
