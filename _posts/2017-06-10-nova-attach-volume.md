@@ -12,7 +12,7 @@ tags:
 本文以kilo版本的nova为例
 
 
-## 1、Nova Client
+## nova挂载卷源码分析
 
 nova/api/openstack/compute/contrib/volumes.py   
 在Nova Client进程中，由VolumeAttachmentController接受挂载请求
@@ -29,9 +29,6 @@ nova.api.openstack.compute.volumes.VolumeAttachmentController.create
             2. nova.compute.api.API
         根据 nova.conf 配置项决定使用哪一个，默认情况下是 nova.compute.api.API
 ```
-
-## 2、
-
 
 ```
 nova.compute.api.API.attach_volume
@@ -217,6 +214,16 @@ nova.volume.API.attach()
                                           mountpoint, mode=mode)
 ```
 
+
+step10 提到的多路径：
+
+普通的电脑主机都是一个硬盘挂接到一个总线上，这里是一对一的关系。而到了有光纤组成的SAN环境，或者由iSCSI组成的IPSAN环境，由于主机和存储通过了光纤交换机或者多块网卡及IP来连接，这样的话，就构成了多对多的关系。也就是说，主机到存储可以有多条路径可以选择。主机到存储之间的IO由多条路径可以选择。每个主机到所对应的存储可以经过几条不同的路径，如果是同时使用的话，I/O流量如何分配？其中一条路径坏掉了，如何处理？还有在操作系统的角度来看，每条路径，操作系统会认为是一个实际存在的物理盘，但实际上只是通向同一个物理盘的不同路径而已，这样是在使用的时候，就给用户带来了困惑。多路径软件就是为了解决上面的问题应运而生的。
+
+多路径的主要功能就是和存储设备一起配合实现如下功能：
+
+1. 故障的切换和恢复
+2. IO流量的负载均衡
+3. 磁盘的虚拟化
 
 ## 参考
 [开启多路径](https://docs.openstack.org/liberty/config-reference/content/config-iscsi-multipath.html)  
