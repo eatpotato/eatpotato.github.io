@@ -143,7 +143,45 @@ def document_create(context, values):
 
 ```
 # nova/db/sqlalchemy/api.py
-I   
+def document_get_by_name(context, name):
+    document_ref = model_query(context, models.Documents).\
+                        filter_by(name=name).\
+                        first()
+    if not document_ref:
+        raise exception.DocumentsNotFoundByName(name=name)
+    return document_ref
+
+def document_get_by_id(context, id):
+    document_ref = model_query(context, models.Documents).\
+                        filter_by(id=id).\
+                        first()
+    if not document_ref:
+        raise exception.DocumentsNotFoundById(id=id)
+    return document_ref
+
+def document_get_all(context):
+    return model_query(context, models.Documents).all()
+
+def document_delete_by_id(context, id):
+    result = model_query(context, models.Documents).\
+                         filter_by(id=id).\
+                         soft_delete()
+    if not result:
+        raise exception.DocumentsNotFoundById(id=id)
+
+def document_update(context, id, name):
+    values = {}
+    query = model_query(context, models.Documents, session=None,
+                        read_deleted="no").\
+                        filter_by(id=id)
+    values['name'] = name
+    values['updated_at'] = timeutils.utcnow()
+    query.update(values)
+    
+def document_create(context, values):
+    document_ref = models.Documents()
+    document_ref.update(values)
+    document_ref.save()
     
 ```
 
