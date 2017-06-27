@@ -346,7 +346,7 @@ goodby, foo
 wrapper
 ```
 
-会发现其输出的是“wrapper”，而不是我们期望的“foo”,因为我们前面提到过,这样的装饰器相当于foo = hello(foo), 而hello函数中返回值是wrapper, 所以foo.__name__ 自然是wrapper。所以，Python的functool包中提供了一个叫wrap的decorator来消除这样的副作用。下面是我们新版本的hello.py。
+会发现其输出的是“wrapper”，而不是我们期望的“foo”,因为我们前面提到过,这样的装饰器相当于foo = hello(foo), 而hello函数中返回值是wrapper, 所以foo.\_\_name\_\_ 自然是wrapper。所以，Python的functool包中提供了一个叫wrap的decorator来消除这样的副作用。下面是我们新版本的hello.py。
 
 ```
 from functools import wraps
